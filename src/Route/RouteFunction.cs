@@ -97,15 +97,15 @@ namespace Route
             var rawMessageSection = GetPayload(myEventHubMessage.GetBytes());
 
             //routing
-            //Case 1 global specific function
+            //Case 1 route to a global specific function
             string functionUrl = System.Environment.GetEnvironmentVariable(String.Concat("DECODER_URL_", metadataMessageSection.sensorDecoder));
             if (String.IsNullOrEmpty(functionUrl))
             {
-                //case 2 global default function
+                //case 2 route to a global default function
                 functionUrl = System.Environment.GetEnvironmentVariable(String.Concat("DECODER_URL_DEFAULT_", metadataMessageSection.sensorDecoder));
                 if (String.IsNullOrEmpty(functionUrl))
                 {
-                    //case 3 local function
+                    //case 3 route to the default function
                     functionUrl = String.Format("https://{0}.azurewebsites.net/api/{1}",
                         System.Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE"),
                         System.Environment.GetEnvironmentVariable("SensorDecoder"));

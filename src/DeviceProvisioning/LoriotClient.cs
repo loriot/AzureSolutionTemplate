@@ -25,16 +25,8 @@ namespace DeviceProvisioning
                 string resultContent = await result.Content.ReadAsStringAsync();
 
                 if (!result.IsSuccessStatusCode)
-                {
-                    //TODO: at the moment Loriot doesn't send htis status if the sensor just exists
-                    if (result.StatusCode == HttpStatusCode.Conflict)
-                    {
-                        log.Warning(String.Format("Sensor just exists in Loriot"));
-                    }
-                    else
-                    {
-                        throw new HttpRequestException(result.ReasonPhrase);
-                    }
+                {                  
+                        throw new HttpRequestException(result.ReasonPhrase);                  
                 }
                 return JObject.Parse(resultContent);                                  
             }
@@ -52,8 +44,7 @@ namespace DeviceProvisioning
                 string resultContent = await result.Content.ReadAsStringAsync();
 
                 if (!result.IsSuccessStatusCode)
-                {
-                    
+                {          
                     //TODO: at the moment Loriot doesn't send htis status if the sensor just exists
                     if (result.StatusCode == HttpStatusCode.Conflict)
                     {
@@ -68,7 +59,6 @@ namespace DeviceProvisioning
                         }
                     }
                 }
-
                 return resultContent;
             }
         }
@@ -84,7 +74,7 @@ namespace DeviceProvisioning
 
                 if (!result.IsSuccessStatusCode)
                 {
-                    //sensor doesn't exists in loriot, used also Notfound maybe loriot in the future sends the right statuscode
+                    //Currently Loriot send MethodNotAllowed if the device is not found, added Notfound for future improvements.
                     if (result.StatusCode == HttpStatusCode.MethodNotAllowed ||
                         result.StatusCode == HttpStatusCode.NotFound)
                     {
