@@ -24,8 +24,8 @@ namespace Decoder
             Dictionary<string, string> returnMessage = new Dictionary<string, string>();
             try
             {
-                int i = payload.data;
-                if (i == 1)
+                int sensorData = payload.data;
+                if (sensorData == 1)
                 {
                     returnMessage.Add("button", "1");
                 }
