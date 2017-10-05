@@ -77,7 +77,7 @@ namespace Route
 
         [FunctionName("RouteFunction")]
         [return: EventHub("outputEventHubMessage", Connection = "OutputRouterEventHub")]
-        public async static Task<string> Run([EventHubTrigger("iotHub", Connection = "IotHubConnection", ConsumerGroup = "router")]EventData myEventHubMessage,
+        public async static Task<string> Run([EventHubTrigger("iotHub", Connection = "IotHubEventHubConnection", ConsumerGroup = "router")]EventData myEventHubMessage,
               TraceWriter log)
         {
             //section to build up the metadata section
