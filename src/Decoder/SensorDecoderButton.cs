@@ -19,12 +19,12 @@ namespace Decoder
         {
             // Get request body
             string body = await req.Content.ReadAsStringAsync();
-            dynamic payload = JObject.Parse(body);
+            dynamic rawMessageSection = JObject.Parse(body);
 
             Dictionary<string, string> returnMessage = new Dictionary<string, string>();
             try
             {
-                int sensorData = payload.data;
+                int sensorData = rawMessageSection.data;
                 if (sensorData == 1)
                 {
                     returnMessage.Add("button", "1");

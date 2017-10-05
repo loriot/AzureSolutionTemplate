@@ -185,9 +185,9 @@ namespace Decoder
         {
             // Get request body
             string body = await req.Content.ReadAsStringAsync();
-            dynamic payload = JObject.Parse(body);
+            dynamic rawMessageSection = JObject.Parse(body);
 
-            string hexInput = payload.data;
+            string hexInput = rawMessageSection.data;
             byte[] bytes = StringToByteArray(hexInput);
             GPSData gpsData = new GPSData(bytes);
 

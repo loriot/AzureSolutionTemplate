@@ -117,9 +117,8 @@ namespace Route
             req.Method = "POST";
             req.ContentType = "application/json";
             Stream stream = req.GetRequestStream();
-            dynamic payload = new ExpandoObject();
-            payload.data = rawMessageSection.data;
-            string json = JsonConvert.SerializeObject(payload);
+            
+            string json = JsonConvert.SerializeObject(rawMessageSection);
             byte[] buffer = Encoding.UTF8.GetBytes(json);
             stream.Write(buffer, 0, buffer.Length);
             string decodedSection = "";
