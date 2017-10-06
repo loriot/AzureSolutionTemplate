@@ -3,8 +3,10 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "solutionPrefix": {
-            "defaultValue": "[uniqueString(subscription().subscriptionId)]",
-            "type": "String"
+            "type": "String",
+            "metadata": {
+                "description": "Prefix used in resource names. Should be unique enough since this ends up being used also in domain names."
+            }
         }
     },
     "variables": {
