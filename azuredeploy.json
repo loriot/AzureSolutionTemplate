@@ -124,10 +124,10 @@
         {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('storageAccountName')]",
-            "apiVersion": "2017-06-01",
+            "apiVersion": "2015-06-15",
             "location": "[resourceGroup().location]",
-            "sku": {
-                "name": "[variables('storageAccountType')]"
+            "properties": {
+                "accountType": "[variables('storageAccountType')]"
             },
             "dependsOn": [
                 "[concat('Microsoft.Devices/iothubs/', variables('iotHubName'))]"
