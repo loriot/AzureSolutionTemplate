@@ -31,16 +31,9 @@
       "eventHubName": {
         "type": "string",
         "metadata": {
-          "description": "The name for the SQL DB"
+          "description": "The name for the Event Hub"
         },
         "defaultValue": "lorioteh"
-      },
-      "ehNamespaceName": {
-        "type": "string",
-        "metadata": {
-          "description": "The name for the SQL DB"
-        },
-        "defaultValue": "loriotehnamespace"
       },
       "streamAnalyticsJobName": { 
         "type": "string",
@@ -83,7 +76,7 @@
       "timeSeriesConsumerGroupName":"loriottimeseries",
       "messageConsumerGroupName": "loriotmessageprocessing",
       "ehAuthRuleName": "streamanalyticsauthrule",
-      "streamAnalyticsJobName": "loriotsaanraman"
+      "ehNamespaceName": "[concat(parameters('eventHubName'), 'ns', uniqueString(resourceGroup().id))]"
     },
     "resources": [
       {
@@ -151,7 +144,7 @@
       },
       {  
         "apiVersion":"2017-04-01",
-        "name":"[parameters('ehNamespaceName')]",
+        "name":"[variables('ehNamespaceName')]",
         "type":"Microsoft.EventHub/Namespaces",
         "location":"[resourceGroup().location]",
         "sku":{  
@@ -167,7 +160,7 @@
               "name":"[parameters('eventHubName')]",
               "type":"EventHubs",
               "dependsOn":[  
-                 "[concat('Microsoft.EventHub/namespaces/', parameters('ehNamespaceName'))]"
+                 "[concat('Microsoft.EventHub/namespaces/', variables('ehNamespaceName'))]"
               ],
               "properties":{
                  "messageRetentionInDays": "7",
@@ -215,11 +208,11 @@
      },
      {
         "apiVersion": "2016-03-01",
-        "name": "[variables('streamAnalyticsJobName')]",
+        "name": "[parameters('streamAnalyticsJobName')]",
         "location": "[resourceGroup().location]",
         "type": "Microsoft.StreamAnalytics/StreamingJobs",
         "dependsOn": [
-          "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('ehNamespaceName'), parameters('eventHubName'))]"
+          "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('ehNamespaceName'), parameters('eventHubName'))]"
         ],
         "properties": {
           "sku": {
@@ -244,9 +237,9 @@
                    "datasource":{    
                       "type":"Microsoft.ServiceBus/EventHub",  
                       "properties":{    
-                         "serviceBusNamespace":"[parameters('ehNamespaceName')]",  
+                         "serviceBusNamespace":"[variables('ehNamespaceName')]",  
                          "sharedAccessPolicyName":"SampleReceiver",  
-                         "sharedAccessPolicyKey":"[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('ehNamespaceName'), parameters('eventHubName'), variables('ehAuthRuleName')), '2014-09-01')]",  
+                         "sharedAccessPolicyKey":"[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', variables('ehNamespaceName'), parameters('eventHubName'), variables('ehAuthRuleName')), '2014-09-01')]",  
                          "eventHubName":"[parameters('eventHubName')]"  
                       }  
                    }  
