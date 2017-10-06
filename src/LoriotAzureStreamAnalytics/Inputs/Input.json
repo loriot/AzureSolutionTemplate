@@ -1,0 +1,24 @@
+﻿{
+  "Name": "loramessageeventhub",
+  "Type": "Data Stream",
+  "DataSourceType": "Event Hub",
+  "Sample": null,
+  "EventHubProperties": {
+    "ConsumerGroupName": "LoraStreamAnalyticsConsumer",
+    "EventHubName": "loramessageeventhub",
+    "ServiceBusNamespace": "LoraEventHub",
+    "SharedAccessPolicyKey": null,
+    "SharedAccessPolicyName": "RootManageSharedAccessKey"
+  },
+  "BlobStorageProperties": null,
+  "IoTHubProperties": null,
+  "BlobReferenceProperties": null,
+  "Serialization": {
+    "Encoding": "UTF8",
+    "Type": "Json",
+    "FieldDelimiter": null,
+    "Format": null
+  },
+  "DataSourceCredentialDomain": "4acdf695-ff40-46ec-b234-119701c13493.StreamAnalyticsCredential",
+  "ScriptType": "Input"
+}

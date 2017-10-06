@@ -1,0 +1,25 @@
+﻿{
+  "Name": "lorasqldb",
+  "DataSourceType": "SQL Database",
+  "EventHubProperties": null,
+  "BlobStorageProperties": null,
+  "SQLDatabaseProperties": {
+    "Database": "[YOURDATABASENAME]",
+    "Password": null,
+    "Server": "[YOURDATABASESERVER]",
+    "Table": "[YOURTABLE]",
+    "User": "[YOURDBUSER]"
+  },
+  "TableStorageProperties": null,
+  "ServiceBusQueueProperties": null,
+  "ServiceBusTopicProperties": null,
+  "DocumentDbProperties": null,
+  "Serialization": {
+    "Encoding": "UTF8",
+    "Type": "Json",
+    "FieldDelimiter": null,
+    "Format": "LineSeparated"
+  },
+  "DataSourceCredentialDomain": "1b035d21-2bf9-48f7-83f6-447d52b76d8f.StreamAnalyticsCredential",
+  "ScriptType": "Output"
+}

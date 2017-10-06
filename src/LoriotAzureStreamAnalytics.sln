@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.16
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{E6C563F2-BDC2-4A24-ACBF-01715157DCBB}") = "LoriotAzureStreamAnalytics", "LoriotAzureStreamAnalytics\LoriotAzureStreamAnalytics.asaproj", "{24129473-F264-464D-913F-44F93E902784}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{24129473-F264-464D-913F-44F93E902784}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24129473-F264-464D-913F-44F93E902784}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24129473-F264-464D-913F-44F93E902784}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24129473-F264-464D-913F-44F93E902784}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8625DB90-CAD4-4AAF-A94F-909345226351}
+	EndGlobalSection
+EndGlobal
