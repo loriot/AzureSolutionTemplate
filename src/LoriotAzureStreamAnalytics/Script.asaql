@@ -1,0 +1,24 @@
+﻿--write to cosmosdb
+SELECT raw.EUI as eui, *
+INTO
+    [loracosmosdb]
+FROM
+    [loramessageeventhub]
+
+-- write to sql
+SELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature , decoded.humidity as humidity, raw.ts as ts
+INTO
+    [lorasqldb]
+FROM
+    [loramessageeventhub]
+WHERE  metadata.sensorDecoder = 'WEATHER_SHIELD'
+
+
+
+/*SELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature , decoded.humidity as humidity, raw.ts as ts
+INTO
+    [loriotpowerbi]
+FROM
+    [loriotmessageeh]
+WHERE  metadata.sensorDecoder = 'WEATHER_SHIELD'
+ */

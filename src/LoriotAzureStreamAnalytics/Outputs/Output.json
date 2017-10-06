@@ -1,0 +1,26 @@
+﻿{
+  "Name": "loracosmosdb",
+  "DataSourceType": "DocumentDB",
+  "EventHubProperties": null,
+  "BlobStorageProperties": null,
+  "SQLDatabaseProperties": null,
+  "TableStorageProperties": null,
+  "ServiceBusQueueProperties": null,
+  "ServiceBusTopicProperties": null,
+  "DocumentDbProperties": {
+    "AccountId": "[YOURCOSMOSDBACCOUNT]",
+    "AccountKey": null,
+    "CollectionNamePattern": "[YOURCOSMOSCOLLECTIONNAME]",
+    "Database": "[YOURCOSMOSDBNAME]",
+    "DocumentId": null,
+    "PartitionKey": null
+  },
+  "Serialization": {
+    "Encoding": "UTF8",
+    "Type": "Json",
+    "FieldDelimiter": null,
+    "Format": "LineSeparated"
+  },
+  "DataSourceCredentialDomain": "8b8769cb-c2ae-4ab6-989f-dcd170f3eac0.StreamAnalyticsCredential",
+  "ScriptType": "Output"
+}
