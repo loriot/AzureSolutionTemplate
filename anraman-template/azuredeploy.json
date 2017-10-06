@@ -1,0 +1,296 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "cosmosDBName": {
+        "type": "string",
+        "metadata": {
+          "description": "Name for the Cosmos DB."
+        },
+        "defaultValue": "loriotcosmosdb"
+      },
+      "sqlAdministratorLogin": {
+        "type": "string",
+        "metadata": {
+          "description": "The admin user of the SQL Server"
+        }
+      },
+      "sqlAdministratorLoginPassword": {
+        "type": "securestring",
+        "metadata": {
+          "description": "The password of the admin user of the SQL Server"
+        }
+      },
+      "sqlDBName": {
+        "type": "string",
+        "metadata": {
+          "description": "The name for the SQL DB"
+        },
+        "defaultValue": "loriotsqldb"
+      },
+      "eventHubName": {
+        "type": "string",
+        "metadata": {
+          "description": "The name for the SQL DB"
+        },
+        "defaultValue": "lorioteh"
+      },
+      "ehNamespaceName": {
+        "type": "string",
+        "metadata": {
+          "description": "The name for the SQL DB"
+        },
+        "defaultValue": "loriotehnamespace"
+      },
+      "streamAnalyticsJobName": { 
+        "type": "string",
+        "minLength": 3,
+        "defaultValue": "loriotsa",
+        "metadata": {
+          "description": "Name for the Stream Analytics job."
+        }
+      },
+      "pbiDatasetName": { 
+        "type": "string",
+        "minLength": 3,
+        "defaultValue": "loriotlivedataset",
+        "metadata": {
+          "description": "Name for the live Power BI dataset (from Stream Analytics)."
+        }
+      },
+      "pbiGroupName": { 
+        "type": "string",
+        "metadata": {
+          "description": "Name for the Power BI Group to stream data to (must be created in advance)"
+        }
+      },
+      "pbiUserDisplayName": { 
+        "type": "string",
+        "metadata": {
+          "description": "Your name for connecting Stream Analytics to PowerBI. e.g. John Doe"
+        }
+      },
+      "pbiUserLoginName": { 
+        "type": "string",
+        "metadata": {
+          "description": "Your login name/alias for connecting Stream Analytics to Power BI. e.g. example@microsoft.com"
+        }
+      }
+    },
+    "variables": {
+      "offerType": "Standard",
+      "sqlserverName": "[concat('sqlserver', uniqueString(resourceGroup().id))]",
+      "timeSeriesConsumerGroupName":"loriottimeseries",
+      "messageConsumerGroupName": "loriotmessageprocessing",
+      "ehAuthRuleName": "streamanalyticsauthrule",
+      "streamAnalyticsJobName": "loriotsaanraman"
+    },
+    "resources": [
+      {
+        "apiVersion": "2015-04-08",
+        "type": "Microsoft.DocumentDB/databaseAccounts",
+        "name": "[parameters('cosmosDBName')]",
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "name": "[parameters('cosmosDBName')]",
+          "databaseAccountOfferType": "[variables('offerType')]",
+          "locations": [
+            {
+              "locationName": "[resourceGroup().location]",
+              "failoverPriority": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "[variables('sqlserverName')]",
+        "type": "Microsoft.Sql/servers",
+        "location": "[resourceGroup().location]",
+        "tags": {
+          "displayName": "SqlServer"
+        },
+        "apiVersion": "2014-04-01",
+        "properties": {
+          "administratorLogin": "[parameters('sqlAdministratorLogin')]",
+          "administratorLoginPassword": "[parameters('sqlAdministratorLoginPassword')]",
+          "version": "12.0"
+        },
+        "resources": [
+          {
+            "name": "[parameters('sqlDBName')]",
+            "type": "databases",
+            "location": "[resourceGroup().location]",
+            "tags": {
+              "displayName": "Database"
+            },
+            "apiVersion": "2015-01-01",
+            "dependsOn": [
+              "[variables('sqlserverName')]"
+            ],
+            "properties": {
+              "edition": "Basic",
+              "collation": "SQL_Latin1_General_CP1_CI_AS",
+              "maxSizeBytes": "1073741824",
+              "requestedServiceObjectiveName": "Basic"
+            }
+          },
+          {
+            "type": "firewallrules",
+            "apiVersion": "2014-04-01",
+            "dependsOn": [
+              "[variables('sqlserverName')]"
+            ],
+            "location": "[resourceGroup().location]",
+            "name": "AllowAllWindowsAzureIps",
+            "properties": {
+              "endIpAddress": "0.0.0.0",
+              "startIpAddress": "0.0.0.0"
+            }
+          }
+        ]
+      },
+      {  
+        "apiVersion":"2017-04-01",
+        "name":"[parameters('ehNamespaceName')]",
+        "type":"Microsoft.EventHub/Namespaces",
+        "location":"[resourceGroup().location]",
+        "sku":{  
+           "name":"Standard"
+        },
+        "properties": {
+           "isAutoInflateEnabled": "true",
+           "maximumThroughputUnits": "20"
+           },
+        "resources":[  
+           {  
+              "apiVersion":"2017-04-01",
+              "name":"[parameters('eventHubName')]",
+              "type":"EventHubs",
+              "dependsOn":[  
+                 "[concat('Microsoft.EventHub/namespaces/', parameters('ehNamespaceName'))]"
+              ],
+              "properties":{
+                 "messageRetentionInDays": "7",
+                 "partitionCount": "2"
+              },
+              "resources":[  
+                 {  
+                    "apiVersion":"2017-04-01",
+                    "name":"[variables('timeSeriesConsumerGroupName')]",
+                    "type":"ConsumerGroups",
+                    "dependsOn":[  
+                       "[parameters('eventHubName')]"
+                    ],
+                    "properties":{
+                    
+                    }
+                 },
+                 {  
+                    "apiVersion":"2017-04-01",
+                    "name":"[variables('messageConsumerGroupName')]",
+                    "type":"ConsumerGroups",
+                    "dependsOn":[  
+                       "[parameters('eventHubName')]"
+                    ],
+                    "properties":{
+                    }
+                 },
+                 {
+                    "type": "authorizationRules",
+                    "name": "[variables('ehAuthRuleName')]",
+                    "apiVersion": "2015-08-01",
+                    "scale": null,
+                    "dependsOn":[  
+                        "[parameters('eventHubName')]"
+                     ],
+                    "properties": {
+                        "rights": [
+                            "Listen"
+                        ]
+                    }
+                 }
+              ]
+           }
+        ]
+     },
+     {
+        "apiVersion": "2016-03-01",
+        "name": "[variables('streamAnalyticsJobName')]",
+        "location": "[resourceGroup().location]",
+        "type": "Microsoft.StreamAnalytics/StreamingJobs",
+        "dependsOn": [
+          "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('ehNamespaceName'), parameters('eventHubName'))]"
+        ],
+        "properties": {
+          "sku": {
+            "name": "Standard"
+          },
+          "outputErrorPolicy": "stop", //TODO: Set to retry? Investigate options.
+          "eventsOutOfOrderPolicy": "adjust",
+          "eventsOutOfOrderMaxDelayInSeconds": 0,
+          "eventsLateArrivalMaxDelayInSeconds": 5,
+          "dataLocale": "en-US",
+          "inputs": [
+            {    
+                "name":"EventHub",  
+                "properties":{    
+                   "type":"stream",  
+                   "serialization":{    
+                      "type":"JSON",  
+                      "properties":{    
+                         "encoding":"UTF8"  
+                      }  
+                   },  
+                   "datasource":{    
+                      "type":"Microsoft.ServiceBus/EventHub",  
+                      "properties":{    
+                         "serviceBusNamespace":"[parameters('ehNamespaceName')]",  
+                         "sharedAccessPolicyName":"SampleReceiver",  
+                         "sharedAccessPolicyKey":"[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('ehNamespaceName'), parameters('eventHubName'), variables('ehAuthRuleName')), '2014-09-01')]",  
+                         "eventHubName":"[parameters('eventHubName')]"  
+                      }  
+                   }  
+                }  
+            }
+          ],
+          "transformation": {
+            "name": "Transformation",
+            "properties": {
+              "streamingUnits": 1,
+              "query": "[concat('SELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature, decoded.humidity as humidity, raw.ts as ts, EventEnqueuedUtcTime as timestamp\r\nINTO\r\n    [loriotPowerBI]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = ''WEATHER_SHIELD''')]"
+            }
+          },
+          "outputs": [
+            {
+              "name": "loriotPowerBI",
+              "properties": {
+                "dataSource": {
+                  "type": "PowerBI",
+                  "outputPowerBISource": {
+                    "dataSet": "[parameters('pbiDatasetName')]",
+                    "table": "weathershielddata",
+                    "groupId": "",
+                    "groupName": "[parameters('pbiGroupName')]",
+                    "refreshToken": "dummytoken",
+                    "tokenUserDisplayName": "[parameters('pbiUserDisplayName')]",
+                    "tokenUserPrincipalName": "[parameters('pbiUserLoginName')]"
+                  },
+                  "properties": {
+                    "dataSet": "[parameters('pbiDatasetName')]",
+                    "table": "weathershielddata",
+                    "groupId": "",
+                    "groupName": "[parameters('pbiGroupName')]",
+                    "refreshToken": "dummytoken",
+                    "tokenUserDisplayName": "[parameters('pbiUserDisplayName')]",
+                    "tokenUserPrincipalName": "[parameters('pbiUserLoginName')]"
+                  }
+                },
+                "serialization": null,
+                "diagnostics": null
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }

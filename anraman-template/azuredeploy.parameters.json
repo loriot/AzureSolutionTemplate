@@ -1,0 +1,36 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "cosmosDBName": {
+            "value":"loriotcosmosdbanraman"
+        },
+        "sqlAdministratorLogin": {
+            "value":"loriotsqladmin"
+        },
+        "sqlDBName": {
+            "value":"loriotsqldbanraman"
+        },
+        "eventHubName": {
+            "value":"loriotehanraman"
+        },
+        "ehNamespaceName": {
+            "value":"loriotehnsanraman"
+        },
+        "streamAnalyticsJobName": {
+            "value":"loriotsaanraman" 
+        },
+        "pbiDatasetName": { 
+            "value":"loriotlivedataset"
+        },
+        "pbiGroupName": { 
+            "value":"LoriotTest"
+        },
+        "pbiUserDisplayName": { 
+            "value":"Anita Ramanan"
+        },
+        "pbiUserLoginName": { 
+            "value":"example@microsoft.com"
+        }
+    }
+}
