@@ -1,0 +1,206 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "solutionPrefix": {
+            "type": "String",
+            "metadata": {
+                "description": "Prefix used in resource names. Should be unique enough since this ends up being used also in domain names."
+            }
+        }
+    },
+    "variables": {
+        "apiVersion": "2017-04-01",
+        "location": "[resourceGroup().location]",
+        "iotHubName": "[concat(parameters('solutionPrefix'), 'hub')]",
+        "deviceLifecycleServiceBusNamespaceName": "[concat(parameters('solutionPrefix'), 'bus')]",
+        "deviceLifecycleQueueName": "[concat(parameters('solutionPrefix'), 'queue')]",
+        "iotHubConsumerGroupName": "router",
+        "authorizationRulesListenName": "Listen",
+        "authorizationRulesSendName": "Send",
+        "functionAppName": "[concat(parameters('solutionPrefix'), 'function')]",
+        "hostingPlanName": "[concat(parameters('solutionPrefix'), 'plan')]",
+        "storageAccountName": "[concat(parameters('solutionPrefix'), 'storage')]",
+        "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+        "storageAccountType": "Standard_LRS",
+        "gitRepoUrl": "https://github.com/loriot/AzureSolutionTemplate.git"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Devices/IotHubs",
+            "sku": {
+                "name": "S1",
+                "tier": "Standard",
+                "capacity": 1
+            },
+            "name": "[variables('iotHubName')]",
+            "apiVersion": "2017-07-01",
+            "location": "[variables('location')]",
+            "properties": {
+                "routing": {
+                    "endpoints": {
+                        "serviceBusQueues": [
+                            {
+                                "connectionString": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/queues/authorizationRules',variables('deviceLifecycleServiceBusNamespaceName'),variables('deviceLifecycleQueueName'),variables('authorizationRulesSendName')),'2015-08-01').primaryConnectionString]",
+                                "name": "DeviceLifecycleQueue"
+                            }
+                        ]
+                    },
+                    "routes": [
+                        {
+                            "name": "DeviceLifecycleRoute",
+                            "source": "DeviceLifecycleEvents",
+                            "endpointNames": [
+                                "DeviceLifecycleQueue"
+                            ],
+                            "isEnabled": true
+                        }
+                    ]
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/queues', variables('deviceLifecycleServiceBusNamespaceName'), variables('deviceLifecycleQueueName'))]"
+            ]
+        },
+        {
+            "apiVersion": "2016-02-03",
+            "dependsOn": [
+                "[concat('Microsoft.Devices/iothubs/', variables('iotHubName'))]"
+            ],
+            "name": "[concat(variables('iotHubName'), '/events/', variables('iotHubConsumerGroupName'))]",
+            "type": "Microsoft.Devices/iotHubs/eventhubEndpoints/ConsumerGroups"
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces",
+            "sku": {
+                "name": "Standard",
+                "tier": "Standard",
+                "capacity": 1
+            },
+            "properties": {},
+            "kind": "Messaging",
+            "name": "[variables('deviceLifecycleServiceBusNamespaceName')]",
+            "apiVersion": "[variables('apiVersion')]",
+            "location": "[variables('location')]"
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/queues",
+            "name": "[concat(variables('deviceLifecycleServiceBusNamespaceName'), '/', variables('deviceLifecycleQueueName'))]",
+            "apiVersion": "[variables('apiVersion')]",
+            "location": "[variables('location')]",
+            "properties": {},
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', variables('deviceLifecycleServiceBusNamespaceName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/queues/authorizationRules",
+            "name": "[concat(variables('deviceLifecycleServiceBusNamespaceName'), '/', variables('deviceLifecycleQueueName'), '/', variables('authorizationRulesListenName'))]",
+            "apiVersion": "[variables('apiVersion')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "rights": [
+                    "Listen"
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', variables('deviceLifecycleServiceBusNamespaceName'))]",
+                "[resourceId('Microsoft.ServiceBus/namespaces/queues', variables('deviceLifecycleServiceBusNamespaceName'), variables('deviceLifecycleQueueName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/queues/authorizationRules",
+            "name": "[concat(variables('deviceLifecycleServiceBusNamespaceName'), '/', variables('deviceLifecycleQueueName'), '/', variables('authorizationRulesSendName'))]",
+            "apiVersion": "[variables('apiVersion')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "rights": [
+                    "Send"
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', variables('deviceLifecycleServiceBusNamespaceName'))]",
+                "[resourceId('Microsoft.ServiceBus/namespaces/queues', variables('deviceLifecycleServiceBusNamespaceName'), variables('deviceLifecycleQueueName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "apiVersion": "2015-06-15",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "accountType": "[variables('storageAccountType')]"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Devices/iothubs/', variables('iotHubName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2015-04-01",
+            "name": "[variables('hostingPlanName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "name": "[variables('hostingPlanName')]",
+                "computeMode": "Dynamic",
+                "sku": "Dynamic"
+            }
+        },
+        {
+            "apiVersion": "2015-08-01",
+            "type": "Microsoft.Web/sites",
+            "name": "[variables('functionAppName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "functionapp",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+            ],
+            "resources": [
+                {
+                    "apiVersion": "2015-08-01",
+                    "name": "web",
+                    "type": "sourcecontrols",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]"
+                    ],
+                    "properties": {
+                        "repoUrl": "[variables('gitRepoUrl')]",
+                        "IsManualIntegration": true
+                    }
+                }
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsDashboard",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~1"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[toLower(variables('functionAppName'))]"
+                        },
+                        {
+                            "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                            "value": "6.5.0"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
