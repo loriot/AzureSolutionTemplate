@@ -3,8 +3,10 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "solutionPrefix": {
-            "defaultValue": "[uniqueString(subscription().subscriptionId)]",
-            "type": "String"
+            "type": "String",
+            "metadata": {
+                "description": "Prefix used in resource names. Should be unique enough since this ends up being used also in domain names."
+            }
         }
     },
     "variables": {
@@ -124,10 +126,10 @@
         {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('storageAccountName')]",
-            "apiVersion": "2017-06-01",
+            "apiVersion": "2015-06-15",
             "location": "[resourceGroup().location]",
-            "sku": {
-                "name": "[variables('storageAccountType')]"
+            "properties": {
+                "accountType": "[variables('storageAccountType')]"
             },
             "dependsOn": [
                 "[concat('Microsoft.Devices/iothubs/', variables('iotHubName'))]"
