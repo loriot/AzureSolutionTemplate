@@ -25,7 +25,7 @@ afvM9AAAAA1ldTEubG9yaW90Lmlvm-GeKaLbzA4zn_ZA95Iv1w==
 The base URL of the Network Server Management API used to sync device information between Azure IoT Hub and LORIOT servers.
 
 ```
-https://eu1.loriot.io/1/nwk/
+https://eu1.loriot.io/1/nwk/app/
 ```
 
 ### IOT_HUB_OWNER_CONNECTION_STRING
@@ -35,3 +35,9 @@ The connection string to the IoT Hub used for device syncing and reading the dev
 ```
 HostName=something.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=fU3Kw5M5J5QXP1QsFLRVjifZ1TeNSlFEFqJ7Xa5jiqo=
 ```
+
+### DEVICE_LIFECYCLE_CONNECTION_STRING
+
+### DEVICE_LIFECYCLE_QUEUE_NAME
+
+### DEVICE_LIFECYCLE_IMPORT_TIMER

@@ -33,7 +33,7 @@
         "iotHubName": "[concat(parameters('solutionPrefix'), 'hub')]",
         "iotHubOwnerPolicyName": "iothubowner",
         "deviceLifecycleServiceBusNamespaceName": "[concat(parameters('solutionPrefix'), 'bus')]",
-        "deviceLifecycleQueueName": "[concat(parameters('solutionPrefix'), 'queue')]",
+        "deviceLifecycleQueueName": "lifecycle-queue",
         "deviceLifecycleImportTimer": "0 */5 * * * *",
         "iotHubConsumerGroupName": "router",
         "authorizationRulesListenName": "Listen",
@@ -241,6 +241,10 @@
                         {
                             "name": "DEVICE_LIFECYCLE_QUEUE_NAME",
                             "value": "[variables('deviceLifecycleQueueName')]"
+                        },
+                        {
+                            "name": "DEVICE_LIFECYCLE_CONNECTION_STRING",
+                            "value": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/queues/authorizationRules',variables('deviceLifecycleServiceBusNamespaceName'),variables('deviceLifecycleQueueName'),variables('authorizationRulesListenName')),'2015-08-01').primaryConnectionString]"
                         }
                     ]
                 }
