@@ -34,6 +34,7 @@
         "iotHubOwnerPolicyName": "iothubowner",
         "deviceLifecycleServiceBusNamespaceName": "[concat(parameters('solutionPrefix'), 'bus')]",
         "deviceLifecycleQueueName": "[concat(parameters('solutionPrefix'), 'queue')]",
+        "deviceLifecycleImportTimer": "0 */5 * * * *",
         "iotHubConsumerGroupName": "router",
         "authorizationRulesListenName": "Listen",
         "authorizationRulesSendName": "Send",
@@ -232,6 +233,14 @@
                         {
                             "name": "IOT_HUB_OWNER_CONNECTION_STRING",
                             "value": "[concat('HostName=', variables('iotHubName'), '.azure-devices.net;SharedAccessKeyName=', variables('iotHubOwnerPolicyName'), ';SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs/IotHubKeys', variables('iotHubName'), variables('iotHubOwnerPolicyName')), '2017-01-19').primaryKey)]"
+                        },
+                        {
+                            "name": "DEVICE_LIFECYCLE_IMPORT_TIMER",
+                            "value": "[variables('deviceLifecycleImportTimer')]"
+                        },
+                        {
+                            "name": "DEVICE_LIFECYCLE_QUEUE_NAME",
+                            "value": "[variables('deviceLifecycleQueueName')]"
                         }
                     ]
                 }
