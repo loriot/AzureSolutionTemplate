@@ -43,7 +43,8 @@
         "storageAccountName": "[concat(parameters('solutionPrefix'), 'storage')]",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "storageAccountType": "Standard_LRS",
-        "gitRepoUrl": "https://github.com/loriot/AzureSolutionTemplate.git"
+        "gitRepoUrl": "https://github.com/loriot/AzureSolutionTemplate.git",
+        "gitBranch": "master"
     },
     "resources": [
         {
@@ -114,8 +115,8 @@
             ]
         },
         {
-            "type": "Microsoft.ServiceBus/namespaces/queues/authorizationRules",
-            "name": "[concat(variables('deviceLifecycleServiceBusNamespaceName'), '/', variables('deviceLifecycleQueueName'), '/', variables('authorizationRulesListenName'))]",
+            "type": "Microsoft.ServiceBus/namespaces/AuthorizationRules",
+            "name": "[concat(variables('deviceLifecycleServiceBusNamespaceName'), '/', variables('authorizationRulesListenName'))]",
             "apiVersion": "[variables('apiVersion')]",
             "location": "[variables('location')]",
             "properties": {
@@ -124,8 +125,7 @@
                 ]
             },
             "dependsOn": [
-                "[resourceId('Microsoft.ServiceBus/namespaces', variables('deviceLifecycleServiceBusNamespaceName'))]",
-                "[resourceId('Microsoft.ServiceBus/namespaces/queues', variables('deviceLifecycleServiceBusNamespaceName'), variables('deviceLifecycleQueueName'))]"
+                "[resourceId('Microsoft.ServiceBus/namespaces', variables('deviceLifecycleServiceBusNamespaceName'))]"
             ]
         },
         {
@@ -186,6 +186,7 @@
                     ],
                     "properties": {
                         "repoUrl": "[variables('gitRepoUrl')]",
+                        "branch": "[variables('gitBranch')]",
                         "IsManualIntegration": true
                     }
                 }
@@ -244,7 +245,7 @@
                         },
                         {
                             "name": "DEVICE_LIFECYCLE_CONNECTION_STRING",
-                            "value": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/queues/authorizationRules',variables('deviceLifecycleServiceBusNamespaceName'),variables('deviceLifecycleQueueName'),variables('authorizationRulesListenName')),'2015-08-01').primaryConnectionString]"
+                            "value": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/AuthorizationRules',variables('deviceLifecycleServiceBusNamespaceName'),variables('authorizationRulesListenName')),'2015-08-01').primaryConnectionString]"
                         }
                     ]
                 }
