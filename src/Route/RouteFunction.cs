@@ -89,7 +89,7 @@ namespace Route
             }
             else
             {
-                metadataMessageSection = await GetTags(System.Environment.GetEnvironmentVariable("IotHubConnection"), deviceId);
+                metadataMessageSection = await GetTags(System.Environment.GetEnvironmentVariable("IOT_HUB_OWNER_CONNECTION_STRING"), deviceId);
                 localCache.Add(deviceId, metadataMessageSection, policy);
             }
 

@@ -9,7 +9,7 @@ namespace DeviceProvisioning
     public static class ScheduledImportDevice
     {
         [FunctionName("ScheduledImportDevice")]
-        public static async Task Run([TimerTrigger("%ImportTimer%")]TimerInfo timer, TraceWriter log)
+        public static async Task Run([TimerTrigger("%DEVICE_LIFECYCLE_IMPORT_TIMER%")]TimerInfo timer, TraceWriter log)
         {            
             log.Info($"Import started at {DateTime.Now}");
             long importedItemCount = 0;

@@ -20,7 +20,7 @@ namespace DeviceProvisioning
                 var devices = await LoriotClient.ListDevices(log);
 
                 log.Info("Getting existing azure iot devices");
-                var registryManager = RegistryManager.CreateFromConnectionString(System.Environment.GetEnvironmentVariable("IotHubConnection"));
+                var registryManager = RegistryManager.CreateFromConnectionString(System.Environment.GetEnvironmentVariable("IOT_HUB_OWNER_CONNECTION_STRING"));
 
 
                 foreach (var device in devices.devices)

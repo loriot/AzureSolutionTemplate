@@ -92,13 +92,13 @@ namespace DeviceProvisioning
 
         private static string SetupApiCall(HttpClient client)
         {
-            string apiKey = System.Environment.GetEnvironmentVariable("LoriotApiKey");
-            string appKey = System.Environment.GetEnvironmentVariable("LoriotAppKey");
-            string baseUrl = System.Environment.GetEnvironmentVariable("LoriotUrl");
+            string appToken = System.Environment.GetEnvironmentVariable("LORIOT_APP_TOKEN");
+            string appId = System.Environment.GetEnvironmentVariable("LORIOT_APP_ID");
+            string baseUrl = System.Environment.GetEnvironmentVariable("LORIOT_API_URL");
 
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appToken);
 
-            return baseUrl + appKey;
+            return baseUrl + appId;
         }
     }
 }

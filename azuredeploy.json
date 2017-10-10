@@ -3,9 +3,27 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "solutionPrefix": {
-            "type": "String",
+            "type": "string",
             "metadata": {
                 "description": "Prefix used in resource names. Should be unique enough since this ends up being used also in domain names."
+            }
+        },
+        "loriotAppId": {
+            "type": "string",
+            "metadata": {
+                "description": "The LORIOT App Id that can be found in the LORIOT portal."
+            }
+        },
+        "loriotAppToken": {
+            "type": "string",
+            "metadata": {
+                "description": "The LORIOT App Token that can be found in the LORIOT portal under the app's security page."
+            }
+        },
+        "loriotApiUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "The LORIOT Network Server Management API URL matching to the location of the app."
             }
         }
     },
@@ -13,8 +31,10 @@
         "apiVersion": "2017-04-01",
         "location": "[resourceGroup().location]",
         "iotHubName": "[concat(parameters('solutionPrefix'), 'hub')]",
+        "iotHubOwnerPolicyName": "iothubowner",
         "deviceLifecycleServiceBusNamespaceName": "[concat(parameters('solutionPrefix'), 'bus')]",
-        "deviceLifecycleQueueName": "[concat(parameters('solutionPrefix'), 'queue')]",
+        "deviceLifecycleQueueName": "lifecycle-queue",
+        "deviceLifecycleImportTimer": "0 */5 * * * *",
         "iotHubConsumerGroupName": "router",
         "authorizationRulesListenName": "Listen",
         "authorizationRulesSendName": "Send",
@@ -23,7 +43,8 @@
         "storageAccountName": "[concat(parameters('solutionPrefix'), 'storage')]",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "storageAccountType": "Standard_LRS",
-        "gitRepoUrl": "https://github.com/loriot/AzureSolutionTemplate.git"
+        "gitRepoUrl": "https://github.com/loriot/AzureSolutionTemplate.git",
+        "gitBranch": "master"
     },
     "resources": [
         {
@@ -59,7 +80,7 @@
                 }
             },
             "dependsOn": [
-                "[resourceId('Microsoft.ServiceBus/namespaces/queues', variables('deviceLifecycleServiceBusNamespaceName'), variables('deviceLifecycleQueueName'))]"
+                "[resourceId('Microsoft.ServiceBus/namespaces/queues/authorizationRules', variables('deviceLifecycleServiceBusNamespaceName'), variables('deviceLifecycleQueueName'), variables('authorizationRulesSendName'))]"
             ]
         },
         {
@@ -94,8 +115,8 @@
             ]
         },
         {
-            "type": "Microsoft.ServiceBus/namespaces/queues/authorizationRules",
-            "name": "[concat(variables('deviceLifecycleServiceBusNamespaceName'), '/', variables('deviceLifecycleQueueName'), '/', variables('authorizationRulesListenName'))]",
+            "type": "Microsoft.ServiceBus/namespaces/AuthorizationRules",
+            "name": "[concat(variables('deviceLifecycleServiceBusNamespaceName'), '/', variables('authorizationRulesListenName'))]",
             "apiVersion": "[variables('apiVersion')]",
             "location": "[variables('location')]",
             "properties": {
@@ -104,8 +125,7 @@
                 ]
             },
             "dependsOn": [
-                "[resourceId('Microsoft.ServiceBus/namespaces', variables('deviceLifecycleServiceBusNamespaceName'))]",
-                "[resourceId('Microsoft.ServiceBus/namespaces/queues', variables('deviceLifecycleServiceBusNamespaceName'), variables('deviceLifecycleQueueName'))]"
+                "[resourceId('Microsoft.ServiceBus/namespaces', variables('deviceLifecycleServiceBusNamespaceName'))]"
             ]
         },
         {
@@ -166,6 +186,7 @@
                     ],
                     "properties": {
                         "repoUrl": "[variables('gitRepoUrl')]",
+                        "branch": "[variables('gitBranch')]",
                         "IsManualIntegration": true
                     }
                 }
@@ -197,6 +218,34 @@
                         {
                             "name": "WEBSITE_NODE_DEFAULT_VERSION",
                             "value": "6.5.0"
+                        },
+                        {
+                            "name": "LORIOT_APP_TOKEN",
+                            "value": "[parameters('loriotAppToken')]"
+                        },
+                        {
+                            "name": "LORIOT_APP_ID",
+                            "value": "[parameters('loriotAppId')]"
+                        },
+                        {
+                            "name": "LORIOT_API_URL",
+                            "value": "[parameters('loriotApiUrl')]"
+                        },
+                        {
+                            "name": "IOT_HUB_OWNER_CONNECTION_STRING",
+                            "value": "[concat('HostName=', variables('iotHubName'), '.azure-devices.net;SharedAccessKeyName=', variables('iotHubOwnerPolicyName'), ';SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs/IotHubKeys', variables('iotHubName'), variables('iotHubOwnerPolicyName')), '2017-01-19').primaryKey)]"
+                        },
+                        {
+                            "name": "DEVICE_LIFECYCLE_IMPORT_TIMER",
+                            "value": "[variables('deviceLifecycleImportTimer')]"
+                        },
+                        {
+                            "name": "DEVICE_LIFECYCLE_QUEUE_NAME",
+                            "value": "[variables('deviceLifecycleQueueName')]"
+                        },
+                        {
+                            "name": "DEVICE_LIFECYCLE_CONNECTION_STRING",
+                            "value": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/AuthorizationRules',variables('deviceLifecycleServiceBusNamespaceName'),variables('authorizationRulesListenName')),'2015-08-01').primaryConnectionString]"
                         }
                     ]
                 }

@@ -33,7 +33,7 @@ namespace DeviceInactiveFunction
 
                 var timeWindow = DateTime.Now.AddMinutes(-minutes);
 
-                registryManager = RegistryManager.CreateFromConnectionString(System.Environment.GetEnvironmentVariable("IotHubConnection"));
+                registryManager = RegistryManager.CreateFromConnectionString(System.Environment.GetEnvironmentVariable("IOT_HUB_OWNER_CONNECTION_STRING"));
 
                 //Currently IoTHub allows only to get 1000 devices. There is no way currently to send a query for the device identity. Would be nice to have the lastactivitytime on the device twins
                 var devices = await registryManager.GetDevicesAsync(int.MaxValue);

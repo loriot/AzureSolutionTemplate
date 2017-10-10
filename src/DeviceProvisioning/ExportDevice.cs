@@ -18,7 +18,7 @@ namespace DeviceProvisioning
     {
         //Info: Use "%MyString% to read environment variables https://github.com/Azure/azure-webjobs-sdk/issues/1221"
         [FunctionName("ExportDevice")]
-        public static async Task Run([ServiceBusTrigger("%IotHubQueueName%", AccessRights.Manage, Connection = "AzureWebJobsConnection")]BrokeredMessage message, TraceWriter log)
+        public static async Task Run([ServiceBusTrigger("%DEVICE_LIFECYCLE_QUEUE_NAME%", AccessRights.Listen, Connection = "DEVICE_LIFECYCLE_CONNECTION_STRING")]BrokeredMessage message, TraceWriter log)
         {           
             log.Info(String.Format("Starting to create/remove device in Loriot"));
             Stream stream = message.GetBody<Stream>();
