@@ -4,7 +4,7 @@ using Microsoft.Azure.WebJobs.Host;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace DeviceProvisioning
+namespace LoriotAzureFunctions.DeviceProvisioning
 {
     public static class ScheduledImportDevice
     {

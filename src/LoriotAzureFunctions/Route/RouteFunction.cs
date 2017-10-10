@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using System.Dynamic;
 using System.Runtime.Caching;
 
-namespace Route
+namespace LoriotAzureFunctions.Route
 {
     public static class RouteFunction
     {
