@@ -10,7 +10,7 @@ using System;
 using Newtonsoft.Json;
 using System.Text;
 
-namespace Decoder
+namespace LoriotAzureFunctions.Decoders
 {
     public class Status
     {

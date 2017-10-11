@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Decoder
+namespace LoriotAzureFunctions.Decoders
 {
     public static class SensorDecoderButton
     {

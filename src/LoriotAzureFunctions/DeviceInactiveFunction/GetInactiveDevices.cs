@@ -8,7 +8,7 @@ using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.Devices;
 using System;
 
-namespace DeviceInactiveFunction
+namespace LoriotAzureFunctions.DeviceInactiveFunction
 {
     public static class GetInactiveDevices
     {

@@ -8,7 +8,7 @@ using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.Devices;
 using System.Collections.Generic;
 
-namespace DeviceProvisioning
+namespace LoriotAzureFunctions.DeviceProvisioning
 {
     public static class ImportDevice
     {
