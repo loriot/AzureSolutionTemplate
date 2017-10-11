@@ -77,7 +77,7 @@ namespace LoriotAzureFunctions.Route
 
         [FunctionName("RouteFunction")]
         [return: EventHub("outputEventHubMessage", Connection = "EVENT_HUB_ROUTER_OUTPUT")]
-        public async static Task<string> Run([EventHubTrigger("%IotHubEventEndpointName%", Connection = "EVENT_HUB_ROUTER_INPUT", ConsumerGroup = "router")]EventData myEventHubMessage,
+        public async static Task<string> Run([EventHubTrigger("%IotHubName%", Connection = "EVENT_HUB_ROUTER_INPUT", ConsumerGroup = "router")]EventData myEventHubMessage,
               TraceWriter log)
         {
             //section to build up the metadata section

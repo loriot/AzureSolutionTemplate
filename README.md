@@ -53,6 +53,23 @@ Connection string defining the output of the router function to the enriched and
 Endpoint=sb://something.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=Ei8jNFRlH/rAjYKTTNxh7eIHlgeleffFekHhnyAxrZ4=
 ```
 
+### DOCUMENT_DB_NAME
+
+Document Database name
+
+### DOCUMENT_DB_ACCESS_KEY
+
+Key of the Document Database
+
+### SQL_DB_CONNECTION
+
+Connection String of the SQL Database
+
+```
+Server=tcp:something.database.windows.net,1433;Initial Catalog=testdbmikou;Persist Security Info=False;
+User ID=username;Password=password;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+```
+
 ### DEVICE_LIFECYCLE_CONNECTION_STRING
 
 ### DEVICE_LIFECYCLE_QUEUE_NAME
