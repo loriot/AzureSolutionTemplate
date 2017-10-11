@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Dynamic;
 using System.Linq;
 using System.Net;
@@ -20,15 +21,26 @@ namespace LoriotAzureFunctions.DeviceProvisioning
             log.Info("Starting getting devices from Loriot");
             using (var client = new HttpClient())
             {
-                string url = SetupApiCall(client) + "/devices";
-                var result = await client.GetAsync(url);
-                string resultContent = await result.Content.ReadAsStringAsync();
+                dynamic returnValue = null;
+                try
+                {
 
-                if (!result.IsSuccessStatusCode)
-                {                  
-                        throw new HttpRequestException(result.ReasonPhrase);                  
+
+                    string url = SetupApiCall(client, log) + "/devices";
+                    var result = await client.GetAsync(url);
+                    string resultContent = await result.Content.ReadAsStringAsync();
+                    if (!result.IsSuccessStatusCode)
+                    {
+                        throw new HttpRequestException(result.ReasonPhrase);
+                    }
+                    returnValue = JObject.Parse(resultContent);
                 }
-                return JObject.Parse(resultContent);                                  
+                catch (ConfigurationException confEx)
+                {
+                    
+                }
+                return returnValue;
+
             }
         }
 
@@ -36,28 +48,37 @@ namespace LoriotAzureFunctions.DeviceProvisioning
         {
             using (var client = new HttpClient())
             {
-                string url = SetupApiCall(client) + "/devices";
-                dynamic item = new ExpandoObject();
-                item.deveui = queueItem.deviceId;
-                StringContent httpConent = new StringContent(JsonConvert.SerializeObject(item), Encoding.UTF8, "application/json");
-                var result = await client.PostAsync(url, httpConent);
-                string resultContent = await result.Content.ReadAsStringAsync();
 
-                if (!result.IsSuccessStatusCode)
-                {          
-                    //TODO: at the moment Loriot doesn't send htis status if the sensor just exists
-                    if (result.StatusCode == HttpStatusCode.Conflict)
+                string resultContent = null;
+                try
+                {
+                    string url = SetupApiCall(client,log) + "/devices";
+                    dynamic item = new ExpandoObject();
+                    item.deveui = queueItem.deviceId;
+                    StringContent httpConent = new StringContent(JsonConvert.SerializeObject(item), Encoding.UTF8, "application/json");
+                    var result = await client.PostAsync(url, httpConent);
+                    resultContent = await result.Content.ReadAsStringAsync();
+
+                    if (!result.IsSuccessStatusCode)
                     {
-                        log.Warning(String.Format("Sensor just exists in Loriot"));
-                    }
-                    else
-                    {
-                        //HACK: check if is duplicate record error
-                        if(!resultContent.Contains("E11000 duplicate key error"))
+                        //TODO: at the moment Loriot doesn't send htis status if the sensor just exists
+                        if (result.StatusCode == HttpStatusCode.Conflict)
                         {
-                            throw new HttpRequestException(result.ReasonPhrase);
+                            log.Warning(String.Format("Sensor just exists in Loriot"));
+                        }
+                        else
+                        {
+                            //HACK: check if is duplicate record error
+                            if (!resultContent.Contains("E11000 duplicate key error"))
+                            {
+                                throw new HttpRequestException(result.ReasonPhrase);
+                            }
                         }
                     }
+                }
+                catch (ConfigurationException confEx)
+                {
+
                 }
                 return resultContent;
             }
@@ -67,34 +88,48 @@ namespace LoriotAzureFunctions.DeviceProvisioning
         {
             using (var client = new HttpClient())
             {
-                string url = SetupApiCall(client) + "/device/" + queueItem.deviceId;
-
-                var result = await client.DeleteAsync(url);
-                string resultContent = await result.Content.ReadAsStringAsync();
-
-                if (!result.IsSuccessStatusCode)
+                string resultContent = null;
+                try
                 {
-                    //Currently Loriot send MethodNotAllowed if the device is not found, added Notfound for future improvements.
-                    if (result.StatusCode == HttpStatusCode.MethodNotAllowed ||
-                        result.StatusCode == HttpStatusCode.NotFound)
+                    string url = SetupApiCall(client, log) + "/device/" + queueItem.deviceId;
+
+                    var result = await client.DeleteAsync(url);
+                    resultContent = await result.Content.ReadAsStringAsync();
+
+                    if (!result.IsSuccessStatusCode)
                     {
-                        log.Warning(String.Format("Sensor not exists in Loriot"));
+                        //Currently Loriot send MethodNotAllowed if the device is not found, added Notfound for future improvements.
+                        if (result.StatusCode == HttpStatusCode.MethodNotAllowed ||
+                            result.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            log.Warning(String.Format("Sensor not exists in Loriot"));
+                        }
+                        else
+                        {
+                            throw new HttpRequestException(result.ReasonPhrase);
+                        }
                     }
-                    else
-                    {
-                        throw new HttpRequestException(result.ReasonPhrase);
-                    }
+                }
+                catch (ConfigurationException confEx)
+                {
+
                 }
 
                 return resultContent;
             }
         }
 
-        private static string SetupApiCall(HttpClient client)
+        private static string SetupApiCall(HttpClient client, TraceWriter log)
         {
             string appToken = System.Environment.GetEnvironmentVariable("LORIOT_APP_TOKEN");
             string appId = System.Environment.GetEnvironmentVariable("LORIOT_APP_ID");
             string baseUrl = System.Environment.GetEnvironmentVariable("LORIOT_API_URL");
+
+            if (String.IsNullOrEmpty(appToken) || String.IsNullOrEmpty(appId) || String.IsNullOrEmpty(baseUrl))
+            {
+                log.Warning("Loriot Appsettings missing. Synchronization to and from Loriot will be skipped");
+                throw new ConfigurationErrorsException();
+            }
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appToken);
 
