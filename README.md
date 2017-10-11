@@ -36,6 +36,23 @@ The connection string to the IoT Hub used for device syncing and reading the dev
 HostName=something.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=fU3Kw5M5J5QXP1QsFLRVjifZ1TeNSlFEFqJ7Xa5jiqo=
 ```
 
+### EVENT_HUB_ROUTER_INPUT
+
+The connection string of the IoT Hub's Event Hub, used as trigger on the RouterFunction to send the messages to the appropriate decoders.
+
+```
+Endpoint=Endpoint=sb://something.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=UDEL1prJ9THqLJel+uk8UeU8fZVkSSi2+CMrp5yrrWM=;EntityPath=iothubname;
+SharedAccessKeyName=iothubowner;SharedAccessKey=2n/TlIoLJbMjmJOmadPU48G0gYfRCU28HeaL0ilkqMU=
+```
+
+### EVENT_HUB_ROUTER_OUTPUT
+
+Connection string defining the output of the router function to the enriched and decoded message Event Hub.
+
+```
+Endpoint=sb://something.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=Ei8jNFRlH/rAjYKTTNxh7eIHlgeleffFekHhnyAxrZ4=
+```
+
 ### DEVICE_LIFECYCLE_CONNECTION_STRING
 
 ### DEVICE_LIFECYCLE_QUEUE_NAME
