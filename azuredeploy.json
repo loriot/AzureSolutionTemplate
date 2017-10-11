@@ -76,7 +76,15 @@
                             ],
                             "isEnabled": true
                         }
-                    ]
+                    ],
+                    "fallbackRoute": {
+                        "name": "$fallback",
+                        "source": "DeviceMessages",
+                        "endpointNames": [
+                            "events"
+                        ],
+                        "isEnabled": true
+                    }
                 }
             },
             "dependsOn": [
