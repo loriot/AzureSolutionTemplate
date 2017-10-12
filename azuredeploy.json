@@ -47,7 +47,13 @@
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "storageAccountType": "Standard_LRS",
         "gitRepoUrl": "https://github.com/loriot/AzureSolutionTemplate.git",
-        "gitBranch": "master"
+        "gitBranch": "master",
+        "eventHubName": "[concat(parameters('solutionPrefix'), 'eventhub')]",
+        "eventHubNamespaceName" : "[concat(parameters('solutionPrefix'), 'eventhubnamespacename')]",
+        "timeSeriesConsumerGroupName":"[concat(parameters('solutionPrefix'),'timeSeriesConsumerGroup')]",
+        "messageConsumerGroupName":"[concat(parameters('solutionPrefix'),'messageConsumerGroupName')]",
+        "eventHubReadRuleName":"[concat(parameters('solutionPrefix'),'eventHubReadRuleName')]",
+        "eventHubWriteRuleName":"[concat(parameters('solutionPrefix'),'eventHubWriteRuleName')]"
     },
     "resources": [
         {
@@ -177,6 +183,84 @@
                 "sku": "Dynamic"
             }
         },
+        {  
+            "apiVersion":"2017-04-01",
+            "name":"[variables('eventHubNamespaceName')]",
+            "type":"Microsoft.EventHub/namespaces",
+            "location":"[resourceGroup().location]",
+            "sku":{  
+               "name":"Standard"
+            },
+            "properties": {
+               "isAutoInflateEnabled": true,
+               "maximumThroughputUnits": 20
+               },
+            "resources":[  
+               {  
+                  "apiVersion":"2017-04-01",
+                  "name":"[variables('eventHubName')]",
+                  "type":"eventhubs",
+                  "dependsOn":[  
+                     "[concat('Microsoft.EventHub/namespaces/', variables('eventHubNamespaceName'))]"
+                  ],
+                  "properties":{
+                     "messageRetentionInDays": 7,
+                     "partitionCount": 2
+                  },
+                  "resources":[  
+                     {  
+                        "apiVersion":"2017-04-01",
+                        "name":"[variables('timeSeriesConsumerGroupName')]",
+                        "type":"consumergroups",
+                        "dependsOn":[  
+                           "[variables('eventHubName')]"
+                        ],
+                        "properties":{
+                        
+                        }
+                     },
+                     {  
+                        "apiVersion":"2017-04-01",
+                        "name":"[variables('messageConsumerGroupName')]",
+                        "type":"consumergroups",
+                        "dependsOn":[  
+                           "[variables('eventHubName')]"
+                        ],
+                        "properties":{
+                        }
+                     },
+                     {
+                        "type": "authorizationRules",
+                        "name": "[variables('eventHubReadRuleName')]",
+                        "apiVersion": "2015-08-01",
+                        "scale": null,
+                        "dependsOn":[  
+                            "[variables('eventHubName')]"
+                         ],
+                        "properties": {
+                            "rights": [
+                                "Listen"
+                            ]
+                        }
+                     },
+                     {
+                        "type": "authorizationRules",
+                        "name": "[variables('eventHubWriteRuleName')]",
+                        "apiVersion": "2015-08-01",
+                        "scale": null,
+                        "dependsOn":[  
+                            "[variables('eventHubName')]"
+                         ],
+                        "properties": {
+                            "rights": [
+                                "Send"
+                            ]
+                        }
+                     }
+                  ]
+               }
+            ]
+        },
         {
             "apiVersion": "2015-08-01",
             "type": "Microsoft.Web/sites",
@@ -257,6 +341,14 @@
                         {
                             "name": "DEVICE_LIFECYCLE_CONNECTION_STRING",
                             "value": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/AuthorizationRules',variables('deviceLifecycleServiceBusNamespaceName'),variables('authorizationRulesListenName')),'2015-08-01').primaryConnectionString]"
+                        },
+                        {
+                            "name": "EVENT_HUB_ROUTER_INPUT",
+                            "value": "[concat('Endpoint=',reference(resourceId('Microsoft.Devices/IoTHubs',variables('iotHubName'))).eventHubEndpoints.events.endpoint,';EntityPath=',variables('iotHubName'),';SharedAccessKeyName=iothubowner;SharedAccessKey=',listKeys(resourceId('Microsoft.Devices/IotHubs',variables('iotHubName')),'2017-01-19').value[0].primaryKey)]"
+                        },
+                        {
+                            "name": "EVENT_HUB_ROUTER_OUTPUT",
+                            "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),variables('eventHubName'),variables('eventHubWriteRuleName')),'2015-08-01').primaryConnectionString]"
                         }
                     ]
                 }
