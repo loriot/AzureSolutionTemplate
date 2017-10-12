@@ -10,18 +10,21 @@
         },
         "loriotAppId": {
             "type": "string",
+			"defaultValue": "",
             "metadata": {
                 "description": "The LORIOT App Id that can be found in the LORIOT portal."
             }
         },
         "loriotAppToken": {
             "type": "string",
+			"defaultValue": "",
             "metadata": {
                 "description": "The LORIOT App Token that can be found in the LORIOT portal under the app's security page."
             }
         },
         "loriotApiUrl": {
             "type": "string",
+			"defaultValue": "",
             "metadata": {
                 "description": "The LORIOT Network Server Management API URL matching to the location of the app."
             }
