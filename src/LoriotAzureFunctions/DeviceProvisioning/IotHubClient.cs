@@ -22,21 +22,23 @@ namespace LoriotAzureFunctions.DeviceProvisioning
                 log.Info("Getting existing azure iot devices");
                 var registryManager = RegistryManager.CreateFromConnectionString(System.Environment.GetEnvironmentVariable("IOT_HUB_OWNER_CONNECTION_STRING"));
 
-
-                foreach (var device in devices.devices)
+                if (devices != null)
                 {
-                    string eui = device._id;
-                    Device azureDevice = await registryManager.GetDeviceAsync(eui);
-                    if (azureDevice == null)
+                    foreach (var device in devices.devices)
                     {
-                        log.Info($"Device not found in azure iot hub: {eui}");
-                        Device createdDevice = await registryManager.AddDeviceAsync(new Device(eui));
-                        importedItemCount++;
-                        log.Info($"Created a new device: {eui}");
-                    }
-                    else
-                    {
-                        log.Info($"Device found in azure iot hub: {eui}");
+                        string eui = device._id;
+                        Device azureDevice = await registryManager.GetDeviceAsync(eui);
+                        if (azureDevice == null)
+                        {
+                            log.Info($"Device not found in azure iot hub: {eui}");
+                            Device createdDevice = await registryManager.AddDeviceAsync(new Device(eui));
+                            importedItemCount++;
+                            log.Info($"Created a new device: {eui}");
+                        }
+                        else
+                        {
+                            log.Info($"Device found in azure iot hub: {eui}");
+                        }
                     }
                 }
             }
