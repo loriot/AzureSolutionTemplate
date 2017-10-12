@@ -35,7 +35,7 @@ namespace LoriotAzureFunctions.InitFunction
         }
 
         [FunctionName("SetupEnvironment")]
-        public static async System.Threading.Tasks.Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get", Route = "setup/{parameter}")]HttpRequestMessage req, string name, TraceWriter log)
+        public static async System.Threading.Tasks.Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get", Route = "setup")]HttpRequestMessage req, TraceWriter log)
         {
             //Create DocumentDB collection
             DocumentClient client = new DocumentClient(new System.Uri(
@@ -94,9 +94,11 @@ namespace LoriotAzureFunctions.InitFunction
                     log.Error("There was a problem in accessing your database, please check your Firewall access");
                 }
             }
+            var template = @"{'$schema': 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#', 'contentVersion': '1.0.0.0', 'parameters': {}, 'variables': {}, 'resources': []}";
+            HttpResponseMessage response = req.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StringContent(template, System.Text.Encoding.UTF8, "application/json");
+            return response;
 
-
-            return null;
         }
     }
 }

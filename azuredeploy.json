@@ -28,6 +28,20 @@
             "metadata": {
                 "description": "The LORIOT Network Server Management API URL matching to the location of the app."
             }
+        },
+        "sqlAdministratorLogin": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The SQL database admin name."
+            }
+        },
+        "sqlAdministratorLoginPassword": {
+            "type": "securestring",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The SQL database admin login password."
+            }
         }
     },
     "variables": {
@@ -46,14 +60,18 @@
         "storageAccountName": "[concat(parameters('solutionPrefix'), 'storage')]",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "storageAccountType": "Standard_LRS",
-        "gitRepoUrl": "https://github.com/loriot/AzureSolutionTemplate.git",
+        "gitRepoUrl": "https://github.com/mandur/AzureSolutionTemplate.git",
         "gitBranch": "master",
         "eventHubName": "[concat(parameters('solutionPrefix'), 'eventhub')]",
-        "eventHubNamespaceName" : "[concat(parameters('solutionPrefix'), 'eventhubnamespacename')]",
-        "timeSeriesConsumerGroupName":"[concat(parameters('solutionPrefix'),'timeSeriesConsumerGroup')]",
-        "messageConsumerGroupName":"[concat(parameters('solutionPrefix'),'messageConsumerGroupName')]",
-        "eventHubReadRuleName":"[concat(parameters('solutionPrefix'),'eventHubReadRuleName')]",
-        "eventHubWriteRuleName":"[concat(parameters('solutionPrefix'),'eventHubWriteRuleName')]"
+        "eventHubNamespaceName": "[concat(parameters('solutionPrefix'), 'eventhubnamespacename')]",
+        "timeSeriesConsumerGroupName": "[concat(parameters('solutionPrefix'),'timeseriesconsumergroup')]",
+        "messageConsumerGroupName": "[concat(parameters('solutionPrefix'),'messageconsumergroup')]",
+        "eventHubReadRuleName": "[concat(parameters('solutionPrefix'),'eventhubreadrule')]",
+        "eventHubWriteRuleName": "[concat(parameters('solutionPrefix'),'eventhubwriterule')]",
+        "documentDatabaseName": "[concat(parameters('solutionPrefix'),'documentdbname')]",
+        "sqlServerName": "[concat(parameters('solutionPrefix'),'sqlservername')]",
+        "sqlDatabaseName": "[concat(parameters('solutionPrefix'),'sqldatabasename')]",
+        "documentOfferType": "Standard"
     },
     "resources": [
         {
@@ -183,82 +201,79 @@
                 "sku": "Dynamic"
             }
         },
-        {  
-            "apiVersion":"2017-04-01",
-            "name":"[variables('eventHubNamespaceName')]",
-            "type":"Microsoft.EventHub/namespaces",
-            "location":"[resourceGroup().location]",
-            "sku":{  
-               "name":"Standard"
+        {
+            "apiVersion": "2017-04-01",
+            "name": "[variables('eventHubNamespaceName')]",
+            "type": "Microsoft.EventHub/namespaces",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard"
             },
             "properties": {
-               "isAutoInflateEnabled": true,
-               "maximumThroughputUnits": 20
-               },
-            "resources":[  
-               {  
-                  "apiVersion":"2017-04-01",
-                  "name":"[variables('eventHubName')]",
-                  "type":"eventhubs",
-                  "dependsOn":[  
-                     "[concat('Microsoft.EventHub/namespaces/', variables('eventHubNamespaceName'))]"
-                  ],
-                  "properties":{
-                     "messageRetentionInDays": 7,
-                     "partitionCount": 2
-                  },
-                  "resources":[  
-                     {  
-                        "apiVersion":"2017-04-01",
-                        "name":"[variables('timeSeriesConsumerGroupName')]",
-                        "type":"consumergroups",
-                        "dependsOn":[  
-                           "[variables('eventHubName')]"
-                        ],
-                        "properties":{
-                        
+                "isAutoInflateEnabled": true,
+                "maximumThroughputUnits": 20
+            },
+            "resources": [
+                {
+                    "apiVersion": "2017-04-01",
+                    "name": "[variables('eventHubName')]",
+                    "type": "eventhubs",
+                    "dependsOn": [
+                        "[concat('Microsoft.EventHub/namespaces/', variables('eventHubNamespaceName'))]"
+                    ],
+                    "properties": {
+                        "messageRetentionInDays": 7,
+                        "partitionCount": 2
+                    },
+                    "resources": [
+                        {
+                            "apiVersion": "2017-04-01",
+                            "name": "[variables('timeSeriesConsumerGroupName')]",
+                            "type": "consumergroups",
+                            "dependsOn": [
+                                "[variables('eventHubName')]"
+                            ],
+                            "properties": {}
+                        },
+                        {
+                            "apiVersion": "2017-04-01",
+                            "name": "[variables('messageConsumerGroupName')]",
+                            "type": "consumergroups",
+                            "dependsOn": [
+                                "[variables('eventHubName')]"
+                            ],
+                            "properties": {}
+                        },
+                        {
+                            "type": "authorizationRules",
+                            "name": "[variables('eventHubReadRuleName')]",
+                            "apiVersion": "2015-08-01",
+                            "scale": null,
+                            "dependsOn": [
+                                "[variables('eventHubName')]"
+                            ],
+                            "properties": {
+                                "rights": [
+                                    "Listen"
+                                ]
+                            }
+                        },
+                        {
+                            "type": "authorizationRules",
+                            "name": "[variables('eventHubWriteRuleName')]",
+                            "apiVersion": "2015-08-01",
+                            "scale": null,
+                            "dependsOn": [
+                                "[variables('eventHubName')]"
+                            ],
+                            "properties": {
+                                "rights": [
+                                    "Send"
+                                ]
+                            }
                         }
-                     },
-                     {  
-                        "apiVersion":"2017-04-01",
-                        "name":"[variables('messageConsumerGroupName')]",
-                        "type":"consumergroups",
-                        "dependsOn":[  
-                           "[variables('eventHubName')]"
-                        ],
-                        "properties":{
-                        }
-                     },
-                     {
-                        "type": "authorizationRules",
-                        "name": "[variables('eventHubReadRuleName')]",
-                        "apiVersion": "2015-08-01",
-                        "scale": null,
-                        "dependsOn":[  
-                            "[variables('eventHubName')]"
-                         ],
-                        "properties": {
-                            "rights": [
-                                "Listen"
-                            ]
-                        }
-                     },
-                     {
-                        "type": "authorizationRules",
-                        "name": "[variables('eventHubWriteRuleName')]",
-                        "apiVersion": "2015-08-01",
-                        "scale": null,
-                        "dependsOn":[  
-                            "[variables('eventHubName')]"
-                         ],
-                        "properties": {
-                            "rights": [
-                                "Send"
-                            ]
-                        }
-                     }
-                  ]
-               }
+                    ]
+                }
             ]
         },
         {
@@ -269,7 +284,11 @@
             "kind": "functionapp",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+                "[resourceId('Microsoft.Sql/servers/databases',variables('sqlServerName'), variables('sqlDatabaseName'))]",
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('documentDatabaseName'))]",
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationrules', variables('eventHubNamespaceName'),variables('eventHubName'),variables('eventHubWriteRuleName'))]",
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationrules', variables('eventHubNamespaceName'),variables('eventHubName'),variables('eventHubReadRuleName'))]"
             ],
             "resources": [
                 {
@@ -284,6 +303,7 @@
                         "branch": "[variables('gitBranch')]",
                         "IsManualIntegration": true
                     }
+
                 }
             ],
             "properties": {
@@ -349,8 +369,102 @@
                         {
                             "name": "EVENT_HUB_ROUTER_OUTPUT",
                             "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),variables('eventHubName'),variables('eventHubWriteRuleName')),'2015-08-01').primaryConnectionString]"
+                        },
+                        {
+                            "name": "DOCUMENT_DB_NAME",
+                            "value": "[variables('documentDatabaseName')]"
+                        },
+                        {
+                            "name": "DOCUMENT_DB_ACCESS_KEY",
+                            "value": "[listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('documentDatabaseName')), '2015-11-06').primaryMasterKey]"
+                        },
+                        {
+                            "name": "SQL_DB_CONNECTION",
+                            "value": "[concat('Server=tcp:',reference(variables('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('sqlDatabaseName'),';Persist Security Info=False;User ID=',reference(variables('sqlServerName')).administratorLogin,';Password=',reference(variables('sqlServerName')).administratorLoginPassword,';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+                        },
+                        {
+                            "name": "IOT_HUB_NAME",
+                            "value": "[variables('iotHubName')]"
                         }
                     ]
+                }
+            }
+        },
+        {
+            "name": "[variables('sqlServerName')]",
+            "type": "Microsoft.Sql/servers",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "SqlServer"
+            },
+            "apiVersion": "2014-04-01",
+            "properties": {
+                "administratorLogin": "[parameters('sqlAdministratorLogin')]",
+                "administratorLoginPassword": "[parameters('sqlAdministratorLoginPassword')]",
+                "version": "12.0"
+            },
+            "resources": [
+                {
+                    "name": "[variables('sqlDatabaseName')]",
+                    "type": "databases",
+                    "location": "[resourceGroup().location]",
+                    "tags": {
+                        "displayName": "Database"
+                    },
+                    "apiVersion": "2015-01-01",
+                    "dependsOn": [
+                        "[variables('sqlServerName')]"
+                    ],
+                    "properties": {
+                        "edition": "Basic",
+                        "collation": "SQL_Latin1_General_CP1_CI_AS",
+                        "maxSizeBytes": "1073741824",
+                        "requestedServiceObjectiveName": "Basic"
+                    }
+                },
+                {
+                    "type": "firewallRules",
+                    "apiVersion": "2014-04-01",
+                    "dependsOn": [
+                        "[variables('sqlServerName')]"
+                    ],
+                    "location": "[resourceGroup().location]",
+                    "name": "AllowAllWindowsAzureIps",
+                    "properties": {
+                        "endIpAddress": "0.0.0.0",
+                        "startIpAddress": "0.0.0.0"
+                    }
+                }
+            ]
+        },
+        {
+            "apiVersion": "2015-04-08",
+            "type": "Microsoft.DocumentDB/databaseAccounts",
+            "name": "[variables('documentDatabaseName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "name": "[variables('documentDatabaseName')]",
+                "databaseAccountOfferType": "[variables('documentOfferType')]",
+                "locations": [
+                    {
+                        "locationName": "[resourceGroup().location]",
+                        "failoverPriority": 0
+                    }
+                ]
+            }
+        },
+        {
+            "name": "functionLauncher",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2016-06-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites/sourcecontrols', variables('functionAppName'),'web')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[Concat('https://',variables('functionAppName'),'.azurewebsites.net/api/setup?code=',listsecrets(resourceId('Microsoft.Web/sites/functions', variables('functionAppName'), 'SetupEnvironment'),'2015-08-01').key)]",
+                    "contentVersion": "1.0.0.0"
                 }
             }
         }
