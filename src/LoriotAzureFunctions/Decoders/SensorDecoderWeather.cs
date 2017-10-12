@@ -13,9 +13,9 @@ using System.Dynamic;
 
 namespace LoriotAzureFunctions.Decoders
 {
-    public static class SensorDecoderWheater
+    public static class SensorDecoderWeather
     {
-        [FunctionName("SensorDecoderWheater")]
+        [FunctionName("SensorDecoderWeather")]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequestMessage req, TraceWriter log)
         {
             // Get request body
