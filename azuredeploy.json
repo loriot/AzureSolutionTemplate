@@ -468,5 +468,19 @@
                 }
             }
         }
+<<<<<<< HEAD
     ]
+=======
+    ],
+    "outputs": {
+        "out": {
+            "type": "string",
+            "value": "[listsecrets(resourceId('Microsoft.Web/sites/functions', variables('functionAppName'), 'SetupEnvironment'),'2015-08-01').key]"
+        },
+        "out2": {
+            "type": "string",
+            "value": "[listsecrets(resourceId('Microsoft.Web/sites/functions', variables('functionAppName'), 'SetupEnvironment'),'2015-08-01').trigger_url]"
+        }
+    }
+>>>>>>> f5441db... added SQL and documentDB, routed to the SetupFunction and setupFunction called from template at end of initalization
 }

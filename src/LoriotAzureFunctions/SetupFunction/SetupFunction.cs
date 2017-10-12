@@ -98,7 +98,6 @@ namespace LoriotAzureFunctions.InitFunction
             HttpResponseMessage response = req.CreateResponse(HttpStatusCode.OK);
             response.Content = new StringContent(template, System.Text.Encoding.UTF8, "application/json");
             return response;
-
         }
     }
 }
