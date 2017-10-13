@@ -367,7 +367,7 @@
                         },
                         {
                             "name": "EVENT_HUB_ROUTER_OUTPUT",
-                            "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),variables('eventHubName'),variables('eventHubWriteRuleName')),'2015-08-01').primaryConnectionString]"
+                            "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),variables('eventHubName'),variables('eventHubWriteRuleName')),'2017-04-01').primaryConnectionString]"
                         },
                         {
                             "name": "DOCUMENT_DB_NAME",
@@ -462,8 +462,8 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[Concat('https://',variables('functionAppName'),'.azurewebsites.net/api/setup?code=',listsecrets(resourceId('Microsoft.Web/sites/functions', variables('functionAppName'), 'setup'),'2016-08-01').key)]",
-                    "contentVersion": "1.0.0.0"
+                    "uri": "[Concat('https://',variables('functionAppName'),'.azurewebsites.net/api/setup')]",
+                  "contentVersion": "1.0.0.0"
                 }
             }
         }
