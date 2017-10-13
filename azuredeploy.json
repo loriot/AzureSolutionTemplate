@@ -367,6 +367,22 @@
                         {
                             "name": "EVENT_HUB_ROUTER_OUTPUT",
                             "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),variables('eventHubName'),variables('eventHubWriteRuleName')),'2015-08-01').primaryConnectionString]"
+                        },
+                        {
+                            "name": "DOCUMENT_DB_NAME",
+                            "value": "[variables('documentDatabaseName')]"
+                        },
+                        {
+                            "name": "DOCUMENT_DB_ACCESS_KEY",
+                            "value": "[listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('documentDatabaseName')), '2015-11-06').primaryMasterKey]"
+                        },
+                        {
+                            "name": "SQL_DB_CONNECTION",
+                            "value": "[concat('Server=tcp:',reference(variables('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('sqlDatabaseName'),';Persist Security Info=False;User ID=',reference(variables('sqlServerName')).administratorLogin,';Password=',reference(variables('sqlServerName')).administratorLoginPassword,';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+                        },
+                        {
+                            "name": "IOT_HUB_NAME",
+                            "value": "[variables('iotHubName')]"
                         }
                     ]
                 }
