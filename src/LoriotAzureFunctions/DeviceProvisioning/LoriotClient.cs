@@ -121,17 +121,17 @@ namespace LoriotAzureFunctions.DeviceProvisioning
 
         private static string SetupApiCall(HttpClient client, TraceWriter log)
         {
-            string appToken = System.Environment.GetEnvironmentVariable("LORIOT_APP_TOKEN");
+            string apiKey = System.Environment.GetEnvironmentVariable("LORIOT_API_KEY");
             string appId = System.Environment.GetEnvironmentVariable("LORIOT_APP_ID");
             string baseUrl = System.Environment.GetEnvironmentVariable("LORIOT_API_URL");
 
-            if (String.IsNullOrEmpty(appToken) || String.IsNullOrEmpty(appId) || String.IsNullOrEmpty(baseUrl))
+            if (String.IsNullOrEmpty(apiKey) || String.IsNullOrEmpty(appId) || String.IsNullOrEmpty(baseUrl))
             {
                 log.Warning("Loriot Appsettings missing. Synchronization to and from Loriot will be skipped");
                 throw new ConfigurationErrorsException();
             }
 
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appToken);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
             return baseUrl + appId;
         }
