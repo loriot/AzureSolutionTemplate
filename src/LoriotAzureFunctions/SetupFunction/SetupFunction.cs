@@ -34,7 +34,7 @@ namespace LoriotAzureFunctions.InitFunction
             return result;
         }
 
-        [FunctionName("SetupEnvironment")]
+        [FunctionName("Setup")]
         public static async System.Threading.Tasks.Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get", Route = "setup")]HttpRequestMessage req, TraceWriter log)
         {
             //Create DocumentDB collection

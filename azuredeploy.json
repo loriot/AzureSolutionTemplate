@@ -67,7 +67,7 @@
         "timeSeriesConsumerGroupName": "[concat(parameters('solutionPrefix'),'timeseriesconsumergroup')]",
         "messageConsumerGroupName": "[concat(parameters('solutionPrefix'),'messageconsumergroup')]",
         "eventHubReadRuleName": "[concat(parameters('solutionPrefix'),'eventhubreadrule')]",
-        "eventHubWriteRuleName": "[concat(parameters('solutionPrefix'),'eventhubwriterule')]",
+        "eventHubWriteRuleName": "[concat(parameters('solutionPrefix'),'eventhubwriterrule')]",
         "documentDatabaseName": "[concat(parameters('solutionPrefix'),'documentdbname')]",
         "sqlServerName": "[concat(parameters('solutionPrefix'),'sqlservername')]",
         "sqlDatabaseName": "[concat(parameters('solutionPrefix'),'sqldatabasename')]",
@@ -247,7 +247,7 @@
                         {
                             "type": "authorizationRules",
                             "name": "[variables('eventHubReadRuleName')]",
-                            "apiVersion": "2015-08-01",
+                            "apiVersion": "2017-04-01",
                             "scale": null,
                             "dependsOn": [
                                 "[variables('eventHubName')]"
@@ -261,7 +261,7 @@
                         {
                             "type": "authorizationRules",
                             "name": "[variables('eventHubWriteRuleName')]",
-                            "apiVersion": "2015-08-01",
+                            "apiVersion": "2017-04-01",
                             "scale": null,
                             "dependsOn": [
                                 "[variables('eventHubName')]"
@@ -277,7 +277,7 @@
             ]
         },
         {
-            "apiVersion": "2015-08-01",
+            "apiVersion": "2016-08-01",
             "type": "Microsoft.Web/sites",
             "name": "[variables('functionAppName')]",
             "location": "[resourceGroup().location]",
@@ -292,7 +292,7 @@
             ],
             "resources": [
                 {
-                    "apiVersion": "2015-08-01",
+                    "apiVersion": "2016-08-01",
                     "name": "web",
                     "type": "sourcecontrols",
                     "dependsOn": [
@@ -303,7 +303,6 @@
                         "branch": "[variables('gitBranch')]",
                         "IsManualIntegration": true
                     }
-
                 }
             ],
             "properties": {
@@ -456,14 +455,14 @@
         {
             "name": "functionLauncher",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2016-06-01",
+            "apiVersion": "2017-05-10",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/sites/sourcecontrols', variables('functionAppName'),'web')]"
             ],
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[Concat('https://',variables('functionAppName'),'.azurewebsites.net/api/setup?code=',listsecrets(resourceId('Microsoft.Web/sites/functions', variables('functionAppName'), 'SetupEnvironment'),'2015-08-01').key)]",
+                    "uri": "[Concat('https://',variables('functionAppName'),'.azurewebsites.net/api/setup?code=',listsecrets(resourceId('Microsoft.Web/sites/functions', variables('functionAppName'), 'setup'),'2016-08-01').key)]",
                     "contentVersion": "1.0.0.0"
                 }
             }
