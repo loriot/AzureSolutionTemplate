@@ -28,6 +28,20 @@
             "metadata": {
                 "description": "The LORIOT Network Server Management API URL matching to the location of the app."
             }
+        },
+        "sqlAdministratorLogin": {
+            "type": "string",
+            "defaultValue": "admin",
+            "metadata": {
+                "description": "The SQL database admin name."
+            }
+        },
+        "sqlAdministratorLoginPassword": {
+            "type": "securestring",
+            "defaultValue": "Passw0rd123+",
+            "metadata": {
+                "description": "The SQL database admin login password."
+            }
         }
     },
     "variables": {
@@ -46,14 +60,18 @@
         "storageAccountName": "[concat(parameters('solutionPrefix'), 'storage')]",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "storageAccountType": "Standard_LRS",
-        "gitRepoUrl": "https://github.com/loriot/AzureSolutionTemplate.git",
+        "gitRepoUrl": "https://github.com/mandur/AzureSolutionTemplate.git",
         "gitBranch": "master",
         "eventHubName": "[concat(parameters('solutionPrefix'), 'eventhub')]",
         "eventHubNamespaceName" : "[concat(parameters('solutionPrefix'), 'eventhubnamespacename')]",
         "timeSeriesConsumerGroupName":"[concat(parameters('solutionPrefix'),'timeSeriesConsumerGroup')]",
         "messageConsumerGroupName":"[concat(parameters('solutionPrefix'),'messageConsumerGroupName')]",
         "eventHubReadRuleName":"[concat(parameters('solutionPrefix'),'eventHubReadRuleName')]",
-        "eventHubWriteRuleName":"[concat(parameters('solutionPrefix'),'eventHubWriteRuleName')]"
+        "eventHubWriteRuleName":"[concat(parameters('solutionPrefix'),'eventHubWriteRuleName')]",
+        "documentDatabaseName": "[concat(parameters('solutionPrefix'),'documentdbname')]",
+        "sqlServerName": "[concat(parameters('solutionPrefix'),'sqlservername')]",
+        "sqlDatabaseName": "[concat(parameters('solutionPrefix'),'sqldatabasename')]",
+        "documentOfferType": "Standard"
     },
     "resources": [
         {
@@ -232,7 +250,7 @@
                      {
                         "type": "authorizationRules",
                         "name": "[variables('eventHubReadRuleName')]",
-                        "apiVersion": "2015-08-01",
+                        "apiVersion": "2017-04-01",
                         "scale": null,
                         "dependsOn":[  
                             "[variables('eventHubName')]"
@@ -246,7 +264,7 @@
                      {
                         "type": "authorizationRules",
                         "name": "[variables('eventHubWriteRuleName')]",
-                        "apiVersion": "2015-08-01",
+                        "apiVersion": "2017-04-01",
                         "scale": null,
                         "dependsOn":[  
                             "[variables('eventHubName')]"
@@ -262,7 +280,7 @@
             ]
         },
         {
-            "apiVersion": "2015-08-01",
+            "apiVersion": "2016-08-01",
             "type": "Microsoft.Web/sites",
             "name": "[variables('functionAppName')]",
             "location": "[resourceGroup().location]",
@@ -273,7 +291,7 @@
             ],
             "resources": [
                 {
-                    "apiVersion": "2015-08-01",
+                    "apiVersion": "2016-08-01",
                     "name": "web",
                     "type": "sourcecontrols",
                     "dependsOn": [
@@ -351,6 +369,85 @@
                             "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',variables('eventHubNamespaceName'),variables('eventHubName'),variables('eventHubWriteRuleName')),'2015-08-01').primaryConnectionString]"
                         }
                     ]
+                }
+            }
+        }
+        ,
+        {
+            "name": "[variables('sqlServerName')]",
+            "type": "Microsoft.Sql/servers",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "SqlServer"
+            },
+            "apiVersion": "2014-04-01",
+            "properties": {
+                "administratorLogin": "[parameters('sqlAdministratorLogin')]",
+                "administratorLoginPassword": "[parameters('sqlAdministratorLoginPassword')]",
+                "version": "12.0"
+            },
+            "resources": [
+                {
+                    "name": "[variables('sqlDatabaseName')]",
+                    "type": "databases",
+                    "location": "[resourceGroup().location]",
+                    "tags": {
+                        "displayName": "Database"
+                    },
+                    "apiVersion": "2015-01-01",
+                    "dependsOn": [
+                        "[variables('sqlServerName')]"
+                    ],
+                    "properties": {
+                        "edition": "Basic",
+                        "collation": "SQL_Latin1_General_CP1_CI_AS",
+                        "maxSizeBytes": "1073741824",
+                        "requestedServiceObjectiveName": "Basic"
+                    }
+                },
+                {
+                    "type": "firewallRules",
+                    "apiVersion": "2014-04-01",
+                    "dependsOn": [
+                        "[variables('sqlServerName')]"
+                    ],
+                    "location": "[resourceGroup().location]",
+                    "name": "AllowAllWindowsAzureIps",
+                    "properties": {
+                        "endIpAddress": "0.0.0.0",
+                        "startIpAddress": "0.0.0.0"
+                    }
+                }
+            ]
+        },
+        {
+            "apiVersion": "2015-04-08",
+            "type": "Microsoft.DocumentDB/databaseAccounts",
+            "name": "[variables('documentDatabaseName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "name": "[variables('documentDatabaseName')]",
+                "databaseAccountOfferType": "[variables('documentOfferType')]",
+                "locations": [
+                    {
+                        "locationName": "[resourceGroup().location]",
+                        "failoverPriority": 0
+                    }
+                ]
+            }
+        },
+        {
+            "name": "functionLauncher",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2017-05-10",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites/sourcecontrols', variables('functionAppName'),'web')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[Concat('https://',variables('functionAppName'),'.azurewebsites.net/api/setup')]",
+                  "contentVersion": "1.0.0.0"
                 }
             }
         }
