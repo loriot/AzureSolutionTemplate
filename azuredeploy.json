@@ -2,10 +2,10 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "solutionPrefix": {
+        "uniqueSolutionPrefix": {
             "type": "string",
             "metadata": {
-                "description": "Prefix used in resource names. Should be unique enough since this ends up being used also in domain names."
+                "description": "Prefix used for resource names. Should be unique as this will also be used for domain names."
             }
         },
         "loriotAppId": {
@@ -29,16 +29,51 @@
                 "description": "The LORIOT Network Server Management API URL matching to the location of the app."
             }
         },
+        "pbiDatasetName": { 
+            "type": "string",
+            "minLength": 3,
+            "defaultValue": "livedataset",
+            "metadata": {
+                "description": "Name for the live Power BI dataset (from Stream Analytics)."
+            }
+        },
+        "pbiGroupName": { 
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Name for the Power BI Group to stream data to (must be created before starting the job)"
+            }
+        },
+        "pbiGroupID": { 
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "ID for the Power BI Group to stream data to (must be created before starting the job) - found in the URL for the dashboard or the settings page. Can be configured later in the Azure portal."
+            }
+        },
+        "pbiUserDisplayName": { 
+            "type": "string",
+            "defaultValue": "Jane Doe",
+            "metadata": {
+                "description": "Your name for connecting Stream Analytics to PowerBI. e.g. John Doe"
+            }
+        },
+        "pbiUserLoginName": { 
+            "type": "string",
+            "defaultValue": "example@microsoft.com",
+            "metadata": {
+                "description": "Your login name/alias for connecting Stream Analytics to Power BI. e.g. example@microsoft.com"
+            }
+        },
         "sqlAdministratorLogin": {
             "type": "string",
-            "defaultValue": "admin",
+            "defaultValue": "sqlAdmin",
             "metadata": {
                 "description": "The SQL database admin name."
             }
         },
         "sqlAdministratorLoginPassword": {
             "type": "securestring",
-            "defaultValue": "Passw0rd123+",
             "metadata": {
                 "description": "The SQL database admin login password."
             }
@@ -47,31 +82,32 @@
     "variables": {
         "apiVersion": "2017-04-01",
         "location": "[resourceGroup().location]",
-        "iotHubName": "[concat(parameters('solutionPrefix'), 'hub')]",
+        "iotHubName": "[concat(parameters('uniqueSolutionPrefix'), 'hub')]",
         "iotHubOwnerPolicyName": "iothubowner",
-        "deviceLifecycleServiceBusNamespaceName": "[concat(parameters('solutionPrefix'), 'bus')]",
+        "deviceLifecycleServiceBusNamespaceName": "[concat(parameters('uniqueSolutionPrefix'), 'bus')]",
         "deviceLifecycleQueueName": "lifecycle-queue",
         "deviceLifecycleImportTimer": "0 */5 * * * *",
         "iotHubConsumerGroupName": "router",
         "authorizationRulesListenName": "Listen",
         "authorizationRulesSendName": "Send",
-        "functionAppName": "[concat(parameters('solutionPrefix'), 'function')]",
-        "hostingPlanName": "[concat(parameters('solutionPrefix'), 'plan')]",
-        "storageAccountName": "[concat(parameters('solutionPrefix'), 'storage')]",
+        "functionAppName": "[concat(parameters('uniqueSolutionPrefix'), 'function')]",
+        "hostingPlanName": "[concat(parameters('uniqueSolutionPrefix'), 'plan')]",
+        "storageAccountName": "[concat(parameters('uniqueSolutionPrefix'), 'storage')]",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "storageAccountType": "Standard_LRS",
         "gitRepoUrl": "https://github.com/loriot/AzureSolutionTemplate.git",
         "gitBranch": "master",
-        "eventHubName": "[concat(parameters('solutionPrefix'), 'eventhub')]",
-        "eventHubNamespaceName" : "[concat(parameters('solutionPrefix'), 'eventhubnamespacename')]",
-        "timeSeriesConsumerGroupName":"[concat(parameters('solutionPrefix'),'timeSeriesConsumerGroup')]",
-        "messageConsumerGroupName":"[concat(parameters('solutionPrefix'),'messageConsumerGroupName')]",
-        "eventHubReadRuleName":"[concat(parameters('solutionPrefix'),'eventHubReadRuleName')]",
-        "eventHubWriteRuleName":"[concat(parameters('solutionPrefix'),'eventHubWriteRuleName')]",
-        "documentDatabaseName": "[concat(parameters('solutionPrefix'),'documentdbname')]",
-        "sqlServerName": "[concat(parameters('solutionPrefix'),'sqlservername')]",
-        "sqlDatabaseName": "[concat(parameters('solutionPrefix'),'sqldatabasename')]",
-        "documentOfferType": "Standard"
+        "eventHubName": "[concat(parameters('uniqueSolutionPrefix'), 'eventhub')]",
+        "eventHubNamespaceName" : "[concat(parameters('uniqueSolutionPrefix'), 'eventhubnamespace')]",
+        "timeSeriesConsumerGroupName":"[concat(parameters('uniqueSolutionPrefix'),'timeseriesconsumergroup')]",
+        "messageConsumerGroupName":"[concat(parameters('uniqueSolutionPrefix'),'messageconsumergroup')]",
+        "eventHubReadRuleName":"[concat(parameters('uniqueSolutionPrefix'),'eventhubreadrule')]",
+        "eventHubWriteRuleName":"[concat(parameters('uniqueSolutionPrefix'),'eventhubwriterule')]",
+        "cosmosdbName": "[concat(parameters('uniqueSolutionPrefix'),'cosmosdb')]",
+        "sqlServerName": "[concat(parameters('uniqueSolutionPrefix'),'sqlserver')]",
+        "sqlDatabaseName": "[concat(parameters('uniqueSolutionPrefix'),'sqldb')]",
+        "streamAnalyticsJobName": "[concat(parameters('uniqueSolutionPrefix'),'streamanalytics')]",
+        "cosmosOfferType": "Standard"
     },
     "resources": [
         {
@@ -370,11 +406,11 @@
                         },
                         {
                             "name": "DOCUMENT_DB_NAME",
-                            "value": "[variables('documentDatabaseName')]"
+                            "value": "[variables('cosmosDBName')]"
                         },
                         {
                             "name": "DOCUMENT_DB_ACCESS_KEY",
-                            "value": "[listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('documentDatabaseName')), '2015-11-06').primaryMasterKey]"
+                            "value": "[listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDBName')), '2015-11-06').primaryMasterKey]"
                         },
                         {
                             "name": "SQL_DB_CONNECTION",
@@ -439,11 +475,11 @@
         {
             "apiVersion": "2015-04-08",
             "type": "Microsoft.DocumentDB/databaseAccounts",
-            "name": "[variables('documentDatabaseName')]",
+            "name": "[variables('cosmosDBName')]",
             "location": "[resourceGroup().location]",
             "properties": {
-                "name": "[variables('documentDatabaseName')]",
-                "databaseAccountOfferType": "[variables('documentOfferType')]",
+                "name": "[variables('cosmosDBName')]",
+                "databaseAccountOfferType": "[variables('cosmosOfferType')]",
                 "locations": [
                     {
                         "locationName": "[resourceGroup().location]",
@@ -465,6 +501,123 @@
                     "uri": "[Concat('https://',variables('functionAppName'),'.azurewebsites.net/api/setup')]",
                   "contentVersion": "1.0.0.0"
                 }
+            }
+        },
+        {
+            "apiVersion": "2016-03-01",
+            "name": "[variables('streamAnalyticsJobName')]",
+            "location": "[resourceGroup().location]",
+            "type": "Microsoft.StreamAnalytics/StreamingJobs",
+            "dependsOn": [
+              "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('eventHubNamespaceName'), variables('eventHubName'))]",
+              "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDBName'))]"
+            ],
+            "properties": {
+              "sku": {
+                "name": "Standard"
+                },
+                "outputErrorPolicy": "stop",
+                "eventsOutOfOrderPolicy": "adjust",
+                "eventsOutOfOrderMaxDelayInSeconds": 0,
+                "eventsLateArrivalMaxDelayInSeconds": 5,
+                "dataLocale": "en-US",
+                "inputs": [
+                    {    
+                        "name":"EventHub",  
+                        "properties":{    
+                        "type":"stream",  
+                        "serialization":{    
+                                "type":"JSON",  
+                                "properties":{    
+                                    "encoding":"UTF8"
+                                }  
+                            },  
+                            "datasource": {    
+                                "type":"Microsoft.ServiceBus/EventHub",  
+                                "properties": {    
+                                    "serviceBusNamespace":"[variables('eventHubNamespaceName')]",  
+                                    "sharedAccessPolicyName":"[variables('eventHubReadRuleName')]",  
+                                    "sharedAccessPolicyKey":"[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', variables('eventHubNamespaceName'), variables('eventHubName'), variables('eventHubReadRuleName')), '2014-09-01').primaryKey]",  
+                                    "eventHubName":"[variables('eventHubName')]",
+                                    "consumerGroupName":"[variables('messageConsumerGroupName')]"  
+                                }  
+                            }  
+                        }  
+                    }
+                ],
+                "transformation": {
+                    "name": "Transformation",
+                    "properties": {
+                    "streamingUnits": 1,
+                    "query": "SELECT raw.EUI as eui, *\r\nINTO\r\n    [CosmosDB]\r\nFROM\r\n    [EventHub]\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature, decoded.humidity as humidity, raw.ts as ts, EventEnqueuedTime as timestamp\r\nINTO\r\n    [SQLDB]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'WEATHER_SHIELD'\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature , decoded.humidity as humidity, raw.ts as ts, EventEnqueuedTime as timestamp\r\nINTO\r\n    [PowerBI]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'WEATHER_SHIELD'"                    
+                    }
+                },
+                "outputs": [
+                {
+                    "name": "PowerBI",
+                    "properties": {
+                        "dataSource": {
+                            "type": "PowerBI",
+                            "outputPowerBISource": {
+                                "dataSet": "[parameters('pbiDatasetName')]",
+                                "table": "weathershielddata",
+                                "groupId": "[parameters('pbiGroupID')]",
+                                "groupName": "[parameters('pbiGroupName')]",
+                                "refreshToken": "dummytoken",
+                                "tokenUserDisplayName": "[parameters('pbiUserDisplayName')]",
+                                "tokenUserPrincipalName": "[parameters('pbiUserLoginName')]"
+                            },
+                            "properties": {
+                                "dataSet": "[parameters('pbiDatasetName')]",
+                                "table": "weathershielddata",
+                                "groupId": "[parameters('pbiGroupID')]",
+                                "groupName": "[parameters('pbiGroupName')]",
+                                "refreshToken": "dummytoken",
+                                "tokenUserDisplayName": "[parameters('pbiUserDisplayName')]",
+                                "tokenUserPrincipalName": "[parameters('pbiUserLoginName')]"
+                            }
+                        },
+                        "serialization": null,
+                        "diagnostics": null
+                    }
+                },
+                {
+                    "name": "CosmosDB",
+                    "properties": {
+                        "dataSource": {
+                        "type": "Microsoft.Storage/DocumentDB",
+                            "properties": {
+                                "type": "Microsoft.Storage/DocumentDB",
+                                "accountId": "[variables('cosmosDBName')]",
+                                "accountKey": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', variables('cosmosDBName')), '2015-04-08').primaryMasterKey]",                    
+                                "database": "db",
+                                "collectionNamePattern": "coll",
+                                "partitionKey": "/deviceId",
+                                "documentId": "/deviceId"
+                            }
+                        },
+                        "serialization": null,
+                        "diagnostics": null
+                    }
+                },
+                {
+                    "name": "SQLDB",
+                    "properties": {
+                        "datasource": {
+                            "type": "Microsoft.Sql/Server/Database",
+                            "properties": {
+                                "server": "[variables('sqlServerName')]",
+                                "database": "[variables('sqlDatabaseName')]",
+                                "user": "[parameters('sqlAdministratorLogin')]",
+                                "password": "[parameters('sqlAdministratorLoginPassword')]",
+                                "table": "dbo.WeatherData"
+                            }
+                        },
+                        "serialization": null,
+                        "diagnostics": null
+                    }
+                }
+              ]
             }
         }
     ]
