@@ -491,7 +491,7 @@
         {
             "name": "functionLauncher",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2017-05-10",
+            "apiVersion": "2014-04-01-preview",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/sites/sourcecontrols', variables('functionAppName'),'web')]"    
             ],
