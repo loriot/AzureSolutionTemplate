@@ -1,7 +1,5 @@
 # AzureSolutionTemplate
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Floriot%2FAzureSolutionTemplate%2Fmaster%2Fazuredeploy.json" target="_blank">
-    <img src="http://azuredeploy.net/deploybutton.png"/>
-</a>
+[![Deploy to Azure](https://azuredeploy.net/deploybutton.svg)](https://azuredeploy.net/)
 
 To run locally, ensure you have the latest Azure CLI installed from [here](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest). 
 Run with the following command (after logging in with ```Login-AzureRmAccount``` and creating the resource group with ```New-AzureRmResourceGroup```):
