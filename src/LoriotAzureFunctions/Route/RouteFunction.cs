@@ -13,6 +13,7 @@ using Microsoft.Azure.Devices;
 using System.Threading.Tasks;
 using System.Dynamic;
 using System.Runtime.Caching;
+using System.Collections.Concurrent;
 
 namespace LoriotAzureFunctions.Route
 {
@@ -76,74 +77,95 @@ namespace LoriotAzureFunctions.Route
         }
 
         [FunctionName("RouteFunction")]
-        [return: EventHub("outputEventHubMessage", Connection = "EVENT_HUB_ROUTER_OUTPUT")]
-        public async static Task<string> Run([EventHubTrigger("%IotHubName%", Connection = "EVENT_HUB_ROUTER_INPUT", ConsumerGroup = "router")]EventData myEventHubMessage,
+        public async static Task Run([EventHubTrigger("%IOT_HUB_NAME%", Connection = "EVENT_HUB_ROUTER_INPUT", ConsumerGroup = "router")]EventData[] myEventHubMessageInput,
+            [EventHub("outputEventHubMessage", Connection = "EVENT_HUB_ROUTER_OUTPUT") ]IAsyncCollector<String> output,
               TraceWriter log)
         {
-            //section to build up the metadata section
-            var deviceId = GetDeviceId(myEventHubMessage);
-            dynamic metadataMessageSection;
-            if (localCache.Contains(deviceId))
-            {
-                metadataMessageSection = localCache[deviceId];
-            }
-            else
-            {
-                metadataMessageSection = await GetTags(System.Environment.GetEnvironmentVariable("IOT_HUB_OWNER_CONNECTION_STRING"), deviceId);
-                localCache.Add(deviceId, metadataMessageSection, policy);
-            }
+            foreach (var myEventHubMessage in myEventHubMessageInput) {
+                //section to build up the metadata section
+                var deviceId = GetDeviceId(myEventHubMessage);
+                dynamic metadataMessageSection;
+                //retry logic to avoid the initial message rush to be declined by the IoT hub.
+                int retryCount = 0;
+                for (; ; )
+                {
+                    try
+                    {
+                        if (localCache.Contains(deviceId))
+                        {
+                            metadataMessageSection = localCache[deviceId];
+                        }
+                        else
+                        {
+                            metadataMessageSection = await GetTags(System.Environment.GetEnvironmentVariable("IOT_HUB_OWNER_CONNECTION_STRING"), deviceId);
+                            localCache.Add(deviceId, metadataMessageSection, policy);
+                        }
+                        break;
+                    }catch (Exception ex)
+                    {
+                        retryCount++;
+                        if (retryCount > 5)
+                            throw new Exception("Could not connect with the IoT Hub device manager");
+                        await Task.Delay(1000);
+                    }
+                }
 
-            //section to build up the raw section
-            var rawMessageSection = GetPayload(myEventHubMessage.GetBytes());
+                //section to build up the raw section
+                var rawMessageSection = GetPayload(myEventHubMessage.GetBytes());
 
-            //routing
-            //Case 1 route to a global specific function
-            string functionUrl = System.Environment.GetEnvironmentVariable(String.Concat("DECODER_URL_", metadataMessageSection.sensorDecoder));
-            if (String.IsNullOrEmpty(functionUrl))
-            {
-                //case 2 route to a global default function
-                functionUrl = System.Environment.GetEnvironmentVariable(String.Concat("DECODER_URL_DEFAULT_", metadataMessageSection.sensorDecoder));
+                //routing
+                //Case 1 route to a global specific function
+                string functionUrl = System.Environment.GetEnvironmentVariable(String.Concat("DECODER_URL_", metadataMessageSection.sensorDecoder));
                 if (String.IsNullOrEmpty(functionUrl))
                 {
-                    //case 3 route to the default function
-                    functionUrl = String.Format("https://{0}.azurewebsites.net/api/{1}",
-                        System.Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE"),
-                        System.Environment.GetEnvironmentVariable("SensorDecoder"));
+                    //case 2 route to a global default function
+                    functionUrl = System.Environment.GetEnvironmentVariable(String.Concat("DECODER_URL_DEFAULT_", metadataMessageSection.sensorDecoder));
+                    if (String.IsNullOrEmpty(functionUrl))
+                    {
+                        //case 3 route to the default function
+                        functionUrl = String.Format("https://{0}.azurewebsites.net/api/{1}",
+                            System.Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE"),
+                            System.Environment.GetEnvironmentVariable("SensorDecoder"));
+                    }
                 }
-            }
 
-            //Section to build up the decoded section
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(functionUrl);
-            req.Method = "POST";
-            req.ContentType = "application/json";
-            Stream stream = req.GetRequestStream();
-            
-            string json = JsonConvert.SerializeObject(rawMessageSection);
-            byte[] buffer = Encoding.UTF8.GetBytes(json);
-            stream.Write(buffer, 0, buffer.Length);
-            string decodedSection = "";
-            try
-            {
-                HttpWebResponse res = (HttpWebResponse)req.GetResponse();
-                using (var sr = new StreamReader(res.GetResponseStream()))
+                //Section to build up the decoded section
+                HttpWebRequest req = (HttpWebRequest)WebRequest.Create(functionUrl);
+                req.Method = "POST";
+                req.ContentType = "application/json";
+                Stream stream = req.GetRequestStream();
+
+                string json = JsonConvert.SerializeObject(rawMessageSection);
+                byte[] buffer = Encoding.UTF8.GetBytes(json);
+                stream.Write(buffer, 0, buffer.Length);
+                string decodedSection = "";
+                try
                 {
-                    decodedSection = sr.ReadToEnd();
+                    HttpWebResponse res = (HttpWebResponse)req.GetResponse();
+                    using (var sr = new StreamReader(res.GetResponseStream()))
+                    {
+                        decodedSection = sr.ReadToEnd();
+                    }
                 }
-            }
-            catch (System.Net.WebException exception)
-            {
-                decodedSection = JsonConvert.SerializeObject(new Dictionary<string, string>() { { "error", "The decoder method was not found" } });
-            }
+                catch (System.Net.WebException exception)
+                {
+                    decodedSection = JsonConvert.SerializeObject(new Dictionary<string, string>() { { "error", "The decoder method was not found" } });
+                }
 
-            //build the message outputed to the output eventHub
-            ReturnMessage returnMessage = new ReturnMessage();
-            returnMessage.decoded = JsonConvert.DeserializeObject(decodedSection);
-            returnMessage.raw = rawMessageSection;
-            returnMessage.metadata = metadataMessageSection;
+                //build the message outputed to the output eventHub
+                ReturnMessage returnMessage = new ReturnMessage();
+                returnMessage.decoded = JsonConvert.DeserializeObject(decodedSection);
+                returnMessage.raw = rawMessageSection;
+                returnMessage.metadata = metadataMessageSection;
 
-            string returnString = JsonConvert.SerializeObject(returnMessage);
-            log.Info(returnString);
-            return returnString;
+                string returnString = JsonConvert.SerializeObject(returnMessage);
+                log.Info(returnString);
+                output.AddAsync(returnString);
+            }
+            await output.FlushAsync();
+
+            return ;
+
         }
     }
 }
