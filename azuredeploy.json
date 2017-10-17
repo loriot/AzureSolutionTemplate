@@ -549,7 +549,7 @@
                     "name": "Transformation",
                     "properties": {
                     "streamingUnits": 1,
-                    "query": "SELECT raw.EUI as eui, *\r\nINTO\r\n    [CosmosDB]\r\nFROM\r\n    [EventHub]\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature, decoded.humidity as humidity, raw.ts as ts, EventEnqueuedTime as timestamp\r\nINTO\r\n    [SQLDB]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'WEATHER_SHIELD'\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature , decoded.humidity as humidity, raw.ts as ts, EventEnqueuedTime as timestamp\r\nINTO\r\n    [PowerBI]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'WEATHER_SHIELD'"                    
+                    "query": "SELECT raw.EUI as eui, *\r\nINTO\r\n    [CosmosDB]\r\nFROM\r\n    [EventHub]\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature, decoded.humidity as humidity, raw.ts as ts, EventEnqueuedTime as time\r\nINTO\r\n    [SQLDB]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'WEATHER_SHIELD'\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature , decoded.humidity as humidity, raw.ts as ts, EventEnqueuedTime as time\r\nINTO\r\n    [PowerBI]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'WEATHER_SHIELD'"                    
                     }
                 },
                 "outputs": [
