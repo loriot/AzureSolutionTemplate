@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "uniqueSolutionPrefix": {
-            "value":"uniqueprefix"
+            "value":"anramanuni"
         },
         "pbiDatasetName": { 
             "value":"loriotlivedataset"
