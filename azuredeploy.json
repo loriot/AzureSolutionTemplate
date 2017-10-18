@@ -60,7 +60,8 @@
         "storageAccountName": "[concat(parameters('solutionPrefix'), 'storage')]",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "storageAccountType": "Standard_LRS",
-        "gitRepoUrl": "https://github.com/loriot/AzureSolutionTemplate.git",
+        "gitUsername": "mandur",
+        "gitRepoUrl": "[concat('https://github.com/',variables('gitUsername'),'/AzureSolutionTemplate.git')]",
         "gitBranch": "master",
         "eventHubName": "[concat(parameters('solutionPrefix'), 'eventhub')]",
         "eventHubNamespaceName" : "[concat(parameters('solutionPrefix'), 'eventhubnamespacename')]",
@@ -462,8 +463,14 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[Concat('https://',variables('functionAppName'),'.azurewebsites.net/api/setup')]",
+                    "uri": "[concat('https://raw.githubusercontent.com/',variables('gitUsername'),'/AzureSolutionTemplate/',variables('gitBranch'),'/function.json')",
                   "contentVersion": "1.0.0.0"
+                },
+                "parameters":{
+                    "solutionPrefix":
+                    {
+                        "value": "[parameters('solutionPrefix')]"
+                    }
                 }
             }
         }

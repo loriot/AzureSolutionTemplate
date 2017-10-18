@@ -125,7 +125,7 @@ namespace LoriotAzureFunctions.Route
                         //case 3 route to the default function
                         functionUrl = String.Format("https://{0}.azurewebsites.net/api/{1}",
                             System.Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE"),
-                            System.Environment.GetEnvironmentVariable("SensorDecoder"));
+                            metadataMessageSection.sensorDecoder);
                     }
                 }
 
