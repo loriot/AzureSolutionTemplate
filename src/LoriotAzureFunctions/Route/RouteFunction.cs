@@ -31,6 +31,11 @@ namespace LoriotAzureFunctions.Route
             SlidingExpiration = new TimeSpan(0, 5, 0)
         };
 
+        /// <summary>
+        /// random generator
+        /// </summary>
+        private static Random random = new Random();
+
         private static dynamic GetPayload(byte[] body)
         {
             var json = System.Text.Encoding.UTF8.GetString(body);
@@ -78,16 +83,17 @@ namespace LoriotAzureFunctions.Route
 
         [FunctionName("RouteFunction")]
         public async static Task Run([EventHubTrigger("%IOT_HUB_NAME%", Connection = "EVENT_HUB_ROUTER_INPUT", ConsumerGroup = "router")]EventData[] myEventHubMessageInput,
-            [EventHub("outputEventHubMessage", Connection = "EVENT_HUB_ROUTER_OUTPUT") ]IAsyncCollector<String> output,
+            [EventHub("outputEventHubMessage", Connection = "EVENT_HUB_ROUTER_OUTPUT")]IAsyncCollector<String> output,
               TraceWriter log)
         {
-            foreach (var myEventHubMessage in myEventHubMessageInput) {
+            foreach (var myEventHubMessage in myEventHubMessageInput)
+            {
                 //section to build up the metadata section
                 var deviceId = GetDeviceId(myEventHubMessage);
                 dynamic metadataMessageSection;
                 //retry logic to avoid the initial message rush to be declined by the IoT hub.
                 int retryCount = 0;
-                for (; ; )
+                while (true)
                 {
                     try
                     {
@@ -101,12 +107,13 @@ namespace LoriotAzureFunctions.Route
                             localCache.Add(deviceId, metadataMessageSection, policy);
                         }
                         break;
-                    }catch (Exception ex)
+                    }
+                    catch (Exception ex)
                     {
                         retryCount++;
                         if (retryCount > 5)
                             throw new Exception("Could not connect with the IoT Hub device manager");
-                        await Task.Delay(1000);
+                        await Task.Delay(random.Next(1000,2000));
                     }
                 }
 
@@ -125,7 +132,7 @@ namespace LoriotAzureFunctions.Route
                         //case 3 route to the default function
                         functionUrl = String.Format("https://{0}.azurewebsites.net/api/{1}",
                             System.Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE"),
-                            System.Environment.GetEnvironmentVariable("SensorDecoder"));
+                            metadataMessageSection.sensorDecoder);
                     }
                 }
 
@@ -163,9 +170,7 @@ namespace LoriotAzureFunctions.Route
                 output.AddAsync(returnString);
             }
             await output.FlushAsync();
-
-            return ;
-
+            return;
         }
     }
 }
