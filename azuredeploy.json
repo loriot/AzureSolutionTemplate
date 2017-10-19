@@ -505,7 +505,7 @@
                 "parameters":{
                     "solutionPrefix":
                     {
-                        "value": "[parameters('solutionPrefix')]"
+                        "value": "[parameters('uniqueSolutionPrefix')]"
                     }
                 }
             }
