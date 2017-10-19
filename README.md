@@ -2,6 +2,11 @@
 
 [![Deploy to Azure](https://azuredeploy.net/deploybutton.svg)](https://azuredeploy.net/)
 
+To run locally, ensure you have the latest Azure CLI installed from [here](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest). 
+Run with the following command:
+```
+az group deployment create --name ExampleDeployment --resource-group YourResourceGroup --template-file azuredeploy.json --parameters azuredeploy.parameters.json
+```
 ## Environment variables
 
 ### LORIOT_APP_ID
