@@ -39,14 +39,14 @@
         },
         "pbiGroupName": { 
             "type": "string",
-            "defaultValue": "",
+            "defaultValue": "My Workspace",
             "metadata": {
                 "description": "Name for the Power BI Group to stream data to (must be created before starting the job)"
             }
         },
         "pbiGroupID": { 
             "type": "string",
-            "defaultValue": "",
+            "defaultValue": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
             "metadata": {
                 "description": "ID for the Power BI Group to stream data to (must be created before starting the job) - found in the URL for the dashboard or the settings page. Can be configured later in the Azure portal."
             }
