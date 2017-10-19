@@ -33,9 +33,9 @@ namespace LoriotAzureFunctions.Decoders
             string encodedData = Encoding.ASCII.GetString(raw);
 
             var split = encodedData.Split(':');
-            dynamic data = new ExpandoObject();
-            data.temperature = split[0];
-            data.humidity = split[1];
+            dynamic data = new ExpandoObject();            
+            data.temperature = Decimal.Parse(split[0]);
+            data.humidity = Decimal.Parse(split[1]);
 
             return new HttpResponseMessage(HttpStatusCode.OK)
             {

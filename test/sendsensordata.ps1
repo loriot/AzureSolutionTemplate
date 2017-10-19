@@ -1,6 +1,6 @@
 Param($Hostname, $SharedAccessKeyName, $SharedAccessKey, $DeviceId, $SendCount)
 
-For ($i=0; $i -le $SendCount; $i++) {
+For ($i=0; $i -lt $SendCount; $i++) {
 	$data= node getTestData.js
 
 	#Hack: on send the " is replaced with ' works, don't ask me why
