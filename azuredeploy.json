@@ -79,15 +79,14 @@
             }
         },
         "timeSeriesInsightDeploy": {
-            "type":"string",
+            "type": "string",
             "allowedValues": [
                 "true",
                 "false"
-              ],
-              "defaultValue": "true",
-    
+            ],
+            "defaultValue": "true",
             "metadata": {
-                "description":"Deploy a Time Series Insight element to provide early analysis on the data."
+                "description": "Deploy a Time Series Insight element to provide early analysis on the data."
             }
         }
     },
@@ -283,8 +282,7 @@
                             "dependsOn": [
                                 "[variables('eventHubName')]"
                             ],
-                            "properties": {
-                            }
+                            "properties": {}
                         },
                         {
                             "apiVersion": "2017-04-01",
@@ -488,7 +486,7 @@
             "name": "[variables('timeSeriesName')]",
             "location": "[resourceGroup().location]",
             "type": "Microsoft.TimeSeriesInsights/environments",
-            "condition":"[equals(parameters('timeSeriesInsightDeploy'),'true')]",
+            "condition": "[equals(parameters('timeSeriesInsightDeploy'),'true')]",
             "tags": {
                 "displayName": "Time Series Insights"
             },
@@ -510,6 +508,7 @@
                     "name": "EventHubSource",
                     "type": "EventSources",
                     "kind": "Microsoft.EventHub",
+                    "condition": "[equals(parameters('timeSeriesInsightDeploy'),'true')]",
                     "location": "[resourceGroup().location]",
                     "tags": {
                         "displayName": "Event Hub Event Source"
