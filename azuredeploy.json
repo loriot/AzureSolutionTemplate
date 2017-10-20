@@ -37,34 +37,6 @@
                 "description": "Name for the live Power BI dataset (from Stream Analytics)."
             }
         },
-        "pbiGroupName": { 
-            "type": "string",
-            "defaultValue": "My Workspace",
-            "metadata": {
-                "description": "Name for the Power BI Group to stream data to (must be created before starting the job)"
-            }
-        },
-        "pbiGroupID": { 
-            "type": "string",
-            "defaultValue": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
-            "metadata": {
-                "description": "ID for the Power BI Group to stream data to (must be created before starting the job) - found in the URL for the dashboard or the settings page. Can be configured later in the Azure portal."
-            }
-        },
-        "pbiUserDisplayName": { 
-            "type": "string",
-            "defaultValue": "Jane Doe",
-            "metadata": {
-                "description": "Your name for connecting Stream Analytics to PowerBI. e.g. John Doe"
-            }
-        },
-        "pbiUserLoginName": { 
-            "type": "string",
-            "defaultValue": "example@microsoft.com",
-            "metadata": {
-                "description": "Your login name/alias for connecting Stream Analytics to Power BI. e.g. example@microsoft.com"
-            }
-        },
         "sqlAdministratorLogin": {
             "type": "string",
             "defaultValue": "sqlAdmin",
@@ -108,7 +80,11 @@
         "sqlServerName": "[concat(parameters('uniqueSolutionPrefix'),'sqlserver')]",
         "sqlDatabaseName": "[concat(parameters('uniqueSolutionPrefix'),'sqldb')]",
         "streamAnalyticsJobName": "[concat(parameters('uniqueSolutionPrefix'),'streamanalytics')]",
-        "cosmosOfferType": "Standard"
+        "cosmosOfferType": "Standard",
+        "pbiGroupName": "My Workspace",
+        "pbiGroupID": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        "pbiUserDisplayName": "Anon Ymous",
+        "pbiUserLoginName": "example@domain.com"
     },
     "resources": [
         {
@@ -568,20 +544,20 @@
                             "outputPowerBISource": {
                                 "dataSet": "[parameters('pbiDatasetName')]",
                                 "table": "weathershielddata",
-                                "groupId": "[parameters('pbiGroupID')]",
-                                "groupName": "[parameters('pbiGroupName')]",
+                                "groupId": "[variables('pbiGroupID')]",
+                                "groupName": "[variables('pbiGroupName')]",
                                 "refreshToken": "dummytoken",
-                                "tokenUserDisplayName": "[parameters('pbiUserDisplayName')]",
-                                "tokenUserPrincipalName": "[parameters('pbiUserLoginName')]"
+                                "tokenUserDisplayName": "[variables('pbiUserDisplayName')]",
+                                "tokenUserPrincipalName": "[variables('pbiUserLoginName')]"
                             },
                             "properties": {
                                 "dataSet": "[parameters('pbiDatasetName')]",
                                 "table": "weathershielddata",
-                                "groupId": "[parameters('pbiGroupID')]",
-                                "groupName": "[parameters('pbiGroupName')]",
+                                "groupId": "[variables('pbiGroupID')]",
+                                "groupName": "[variables('pbiGroupName')]",
                                 "refreshToken": "dummytoken",
-                                "tokenUserDisplayName": "[parameters('pbiUserDisplayName')]",
-                                "tokenUserPrincipalName": "[parameters('pbiUserLoginName')]"
+                                "tokenUserDisplayName": "[variables('pbiUserDisplayName')]",
+                                "tokenUserPrincipalName": "[variables('pbiUserLoginName')]"
                             }
                         },
                         "serialization": null,
