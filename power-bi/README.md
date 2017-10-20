@@ -1,5 +1,12 @@
-Power BI Setup Instructions
-======
+# Power BI Setup Instructions
+
+## Contents
+
+[Realtime Data using Azure Stream Analytics (Power BI Service)](#realtime-data-using-azure-stream-analytics-power-bi-service) 
+
+[Historical Analysis using Cosmos DB (Power BI Desktop)](#historical-analysis-using-cosmos-db-power-bi-desktop)
+
+
 ## Realtime Data using Azure Stream Analytics (Power BI Service)
 If you have deployed the template using the 'Deploy to Azure' button, click on the 'Manage your resources' link once all resources have successfully deployed:
 
