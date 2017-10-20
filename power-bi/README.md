@@ -27,7 +27,7 @@ Now click 'Start' to start the job:
 
 Once this is complete, a pale blue banner with the text 'Running' will appear at the top of the Stream Analytics blade where it previously read 'Created'.
 
-Now the job is running. You won’t see the dataset appear until data is being pushed through Stream Analytics, at which point the dataset will appear under the ‘Datasets’ menu in the [Power BI portal](https://powerbi.microsoft.com/) as shown below:
+Now the job is running. You won’t see the dataset in the portal until it has started receiving data from Stream Analytics, at which point it will appear under the ‘Datasets’ menu in the [Power BI portal](https://powerbi.microsoft.com/) as shown below:
 
 ![New Dataset](Images/PowerBIStreamingDataset.PNG)
 
@@ -58,13 +58,13 @@ This section requires Power BI Desktop to be installed. This is available from M
 
 Once installed, open up the Power BI Template [IoTDashboard.pbit](IoTDashboard.pbit) provided with this repo.
 
-It will prompt you to enter your Inactive Devices API URL. This value can be found in the Azure Portal by navigating to the Function App deployed previously, selecting the 'GetInactiveDevices' Function and clicking on '</> Get function URL' in the top right corner as shown:
+You will be prompted to enter your Inactive Devices API URL. This value can be found in the Azure Portal by navigating to the Function App deployed previously, selecting the 'GetInactiveDevices' Function and clicking on '</> Get function URL' in the top right corner as shown:
 
 ![Get Function Details](Images/GetFunctionDetails.PNG)
 
 ![Get Function URL](Images/GetFunctionURL.PNG)
 
-Copy this value into the prompt and append &minutes=60 to the end of the URL - replace 60 with your preferred period of time before a device is considered 'inactive'. The result should look like the following:
+Copy this value into the prompt and append '&minutes=60' to the end of the URL - replace 60 with your preferred period of time before a device is considered 'inactive'. The result should look like the following:
 
 ```
 https://iotdeploymenttestfunction.azurewebsites.net/api/GetInactiveDevices?code=<yourkey>&minutes=60
@@ -94,7 +94,7 @@ Scroll to the top of the 'Applied Steps' pane until you see 'Source'. Click on t
 
 ![Open Source Settings](Images/OpenSource.PNG)
 
-Edit the source settings to reflect the URL for your newly created Cosmos DB and click 'OK' (Cosmos DB will be initialised for you by the deployment script with default database 'db' and collection 'coll' which have been auto-populated for you):
+Edit the source settings to reflect the URL for your newly created Cosmos DB and click 'OK' (Cosmos DB will be initialised for you by the deployment script with default database 'db' and collection 'coll', which have been auto-populated for you):
 
 ![Edit Source Settings](Images/EditSource.png)
 
@@ -108,17 +108,17 @@ Repeat this process for the 'Device Data (Latest Readings Only)' query, found in
 
 ![Device Data (Latest Readings Only)](Images/RepeatProcess.PNG)
  
->NOTE: This is a temporary workaround to be used until the Cosmos DB Power BI connector is out of preview and parameters are enabled for this connection type (after which the experience will be similar to that for the Inactive Devices API). 
+>**NOTE: This is a temporary workaround to be used until the Cosmos DB Power BI connector is out of preview and parameters are enabled for this connection type (after which the experience will be similar to that for the Inactive Devices API).**
 
 Click ‘Close and Apply’ in the top left of the Query Editor window. You will then be prompted for authentication for the inactive devices API – choose Anonymous and click 'Connect'.
 
 ![API Authentication](Images/APIAuth.png)
 
-Now that all the connections are correctly set up and authenticated, the visuals should populate with your data and look similar to the below:
+Now that all the connections are correctly set up and authenticated, the visualisations should populate with your data and look similar to the below. If they don't, manally refresh the data by clicking on the refresh button in the 'Home' tab of the ribbon.
 
 ![Final Result](Images/FinalResult.png)
 
-To publish this report to the Power BI Service, click the 'Publish' button at the right of the 'Home' tab in the ribbon. Select your preferred destination to deploy to the [Power BI portal](https://powerbi.microsoft.com):
+To publish this report to the Power BI Service, click the 'Publish' button at the right of the 'Home' tab in the ribbon. Choose your preferred destination Group Workspace and click 'Select' to deploy to the [Power BI portal](https://powerbi.microsoft.com):
 
 ![Publish Report](Images/Publish.PNG)
 
