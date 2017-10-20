@@ -17,7 +17,7 @@ Then select the Power BI output:
 
 Click on 'Renew authorization' to sign in:
 
-![Renew Authorisation](Images/RenewAuth.png) {:height="50%" width="50%"}
+![Renew Authorisation](Images/RenewAuth.png)
 
 Once this has completed, choose the Power BI Group Workspace you wish to use for the dashboard from the dropdown at the top of the blade. This must have been created previously in the [Power BI portal](https://powerbi.microsoft.com/). Once you are happy with the workspace/dataset details, Click 'Save'.
 
