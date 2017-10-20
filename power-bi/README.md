@@ -3,13 +3,13 @@ Power BI Setup Instructions
 ## Realtime Data using Azure Stream Analytics (Power BI Service)
 If you have deployed the template using the 'Deploy to Azure' button, click on the 'Manage your resources' link once all resources have successfully deployed:
 
-![Manage Resources](Images/ManageResources.png)
+![Manage Resources](Images/ManageResources.PNG)
 
 If you deployed from the command line, open up a browser and navigate to your newly created resource group in the [Azure Portal](https://portal.azure.com).
 
 Once in the resource group blade, select the Stream Analytics Job:
 
-![Resource Group](Images/ResourceGroup.png)
+![Resource Group](Images/ResourceGroup.PNG)
 
 Then select the Power BI output:
 
@@ -23,35 +23,35 @@ Once this has completed, choose the Power BI Group Workspace you wish to use for
 
 Now click 'Start' to start the job:
 
-![Start Job](Images/StreamAnalytics2.png)
+![Start Job](Images/StreamAnalytics2.PNG)
 
 Once this is complete, a pale blue banner with the text 'Running' will appear at the top of the Stream Analytics blade where it previously read 'Created'.
 
 Now the job is running. You won’t see the dataset appear until data is being pushed through Stream Analytics, at which point the dataset will appear under the ‘Datasets’ menu in the [Power BI portal](https://powerbi.microsoft.com/) as shown below:
 
-![New Dataset](Images/PowerBIStreamingDataset.png)
+![New Dataset](Images/PowerBIStreamingDataset.PNG)
 
 To create visuals using this streaming data, do the following:
 1. Select a dashboard from the Dashboards menu on the left (or create a new one).
 2. Add a tile from the menu at the top of the page:
 
-![Add Tile](Images/AddTile.png)
+![Add Tile](Images/AddTile.PNG)
 
 3. Select 'Custom Streaming Data' as the source: 
 
-![Select Source](Images/ConfigureTile1.png)
+![Select Source](Images/ConfigureTile1.PNG)
 
 4. Select your dataset (created by Stream Analytics): 
 
-![Select Dataset](Images/ConfigureTile2.png)
+![Select Dataset](Images/ConfigureTile2.PNG)
 
 5. Customise tile as required, click 'Apply' once satisfied (this can be edited later):
 
-![Customise Tile](Images/ConfigureTile3.png)
+![Customise Tile](Images/ConfigureTile3.PNG)
 
 6. The final result will look something like the below. If there is no data being streamed to the tile currently it will appear as shown on the left. Otherwise, data will be displayed in near realtime as it is pushed from the Stream Analytics job (as seen on the right):
 
-![Finished Tile](Images/TileDemo.png)
+![Finished Tile](Images/TileDemo.PNG)
 
 ## Historical Analysis using Cosmos DB (Power BI Desktop)
 This section requires Power BI Desktop to be installed. This is available from Microsoft for free [here](https://powerbi.microsoft.com/en-us/desktop/).
@@ -60,9 +60,9 @@ Once installed, open up the Power BI Template [IoTDashboard.pbit](IoTDashboard.p
 
 It will prompt you to enter your Inactive Devices API URL. This value can be found in the Azure Portal by navigating to the Function App deployed previously, selecting the 'GetInactiveDevices' Function and clicking on '</> Get function URL' in the top right corner as shown:
 
-![Get Function Details](Images/GetFunctionDetails.png)
+![Get Function Details](Images/GetFunctionDetails.PNG)
 
-![Get Function URL](Images/GetFunctionURL.png)
+![Get Function URL](Images/GetFunctionURL.PNG)
 
 Copy this value into the prompt and append &minutes=60 to the end of the URL - replace 60 with your preferred period of time before a device is considered 'inactive'. The result should look like the following:
 
@@ -74,17 +74,17 @@ https://iotdeploymenttestfunction.azurewebsites.net/api/GetInactiveDevices?code=
 
 Click 'Load' to pull data from the API. At this point it will attempt to load data from the two sources specified in the template (Cosmos DB and the Inactive Devices API) - this will fail because we have not yet set up the Cosmos DB connection. Click 'Cancel' on the popup window to skip loading the data until the connection is configured:
 
-![Cancel Data Load](Images/CancelLoad.png)
+![Cancel Data Load](Images/CancelLoad.PNG)
 
 Alternatively, wait for the load to fail and then click 'Close'. If prompted for a Cosmos DB account key, select 'Cancel': 
 
-![Cancel Cosmos Authentication](Images/CancelCosmosAuth.png)
+![Cancel Cosmos Authentication](Images/CancelCosmosAuth.PNG)
 
-![Data Load Failed](Images/LoadFailed.png)
+![Data Load Failed](Images/LoadFailed.PNG)
 
 Next, open Query Editor from the Home tab in the ribbon:
 
-![Open Query Editor](Images/OpenQueryEditor.png)
+![Open Query Editor](Images/OpenQueryEditor.PNG)
 
 You will see the following screen:
 
@@ -92,7 +92,7 @@ You will see the following screen:
 
 Scroll to the top of the 'Applied Steps' pane until you see 'Source'. Click on the cog symbol to its right:
 
-![Open Source Settings](Images/OpenSource.png)
+![Open Source Settings](Images/OpenSource.PNG)
 
 Edit the source settings to reflect the URL for your newly created Cosmos DB and click 'OK' (Cosmos DB will be initialised for you by the deployment script with default database 'db' and collection 'coll' which have been auto-populated for you):
 
@@ -100,13 +100,13 @@ Edit the source settings to reflect the URL for your newly created Cosmos DB and
 
 Enter the primary key for the Cosmos DB when prompted. This can be found in the Azure portal:
 
-![Get Cosmos Details](Images/CosmosDetails.png)
+![Get Cosmos Details](Images/CosmosDetails.PNG)
 
 ![Enter Cosmos DB Key](Images/CosmosKey.png)
 
 Repeat this process for the 'Device Data (Latest Readings Only)' query, found in the Queries pane on the left:
 
-![Device Data (Latest Readings Only)](Images/RepeatProcess.png)
+![Device Data (Latest Readings Only)](Images/RepeatProcess.PNG)
  
 >NOTE: This is a temporary workaround to be used until the Cosmos DB Power BI connector is out of preview and parameters are enabled for this connection type (after which the experience will be similar to that for the Inactive Devices API). 
 
@@ -120,8 +120,8 @@ Now that all the connections are correctly set up and authenticated, the visuals
 
 To publish this report to the Power BI Service, click the 'Publish' button at the right of the 'Home' tab in the ribbon. Select your preferred destination to deploy to the [Power BI portal](https://powerbi.microsoft.com):
 
-![Publish Report](Images/Publish.png)
+![Publish Report](Images/Publish.PNG)
 
 It will then appear under the 'Reports' menu in the portal:
 
-![Publish Report](Images/ReportsPortal.png)
+![Publish Report](Images/ReportsPortal.PNG)
