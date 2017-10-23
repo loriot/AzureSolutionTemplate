@@ -95,9 +95,8 @@
         "pbiGroupName": "My Workspace",
         "pbiGroupID": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
         "pbiUserDisplayName": "Anon Ymous",
-        "pbiUserLoginName": "example@domain.com"
+        "pbiUserLoginName": "example@domain.com",
         "timeSeriesName": "[concat(parameters('uniqueSolutionPrefix'),'timeseries')]"
-
     },
     "resources": [
         {
@@ -591,53 +590,54 @@
                     }
                 },
                 "outputs": [
-                {
-                    "name": "PowerBI",
-                    "properties": {
-                        "dataSource": {
-                            "type": "PowerBI",
-                            "outputPowerBISource": {
-                                "dataSet": "[parameters('pbiDatasetName')]",
-                                "table": "weathershielddata",
-                                "groupId": "[variables('pbiGroupID')]",
-                                "groupName": "[variables('pbiGroupName')]",
-                                "refreshToken": "dummytoken",
-                                "tokenUserDisplayName": "[variables('pbiUserDisplayName')]",
-                                "tokenUserPrincipalName": "[variables('pbiUserLoginName')]"
-                            },
-                            "properties": {
-                                "dataSet": "[parameters('pbiDatasetName')]",
-                                "table": "weathershielddata",
-                                "groupId": "[variables('pbiGroupID')]",
-                                "groupName": "[variables('pbiGroupName')]",
-                                "refreshToken": "dummytoken",
-                                "tokenUserDisplayName": "[variables('pbiUserDisplayName')]",
-                                "tokenUserPrincipalName": "[variables('pbiUserLoginName')]"
-                            }
-                        },
-                        "serialization": null,
-                        "diagnostics": null
-                    }
-                },
-                {
-                    "name": "CosmosDB",
-                    "properties": {
-                        "dataSource": {
-                        "type": "Microsoft.Storage/DocumentDB",
-                            "properties": {
-                                "type": "Microsoft.Storage/DocumentDB",
+                    {
+                        "name": "PowerBI",
+                        "properties": {
+                            "dataSource": {
+                                "type": "PowerBI",
+                                "outputPowerBISource": {
+                                    "dataSet": "[parameters('pbiDatasetName')]",
+                                    "table": "weathershielddata",
+                                    "groupId": "[variables('pbiGroupID')]",
+                                    "groupName": "[variables('pbiGroupName')]",
+                                    "refreshToken": "dummytoken",
+                                    "tokenUserDisplayName": "[variables('pbiUserDisplayName')]",
+                                    "tokenUserPrincipalName": "[variables('pbiUserLoginName')]"
+                                },
                                 "properties": {
-                                    "type": "Microsoft.Storage/DocumentDB",
-                                    "accountId": "[variables('cosmosDBName')]",
-                                    "accountKey": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', variables('cosmosDBName')), '2015-04-08').primaryMasterKey]",
-                                    "database": "db",
-                                    "collectionNamePattern": "coll",
-                                    "partitionKey": "/deviceId",
-                                    "documentId": "/deviceId"
+                                    "dataSet": "[parameters('pbiDatasetName')]",
+                                    "table": "weathershielddata",
+                                    "groupId": "[variables('pbiGroupID')]",
+                                    "groupName": "[variables('pbiGroupName')]",
+                                    "refreshToken": "dummytoken",
+                                    "tokenUserDisplayName": "[variables('pbiUserDisplayName')]",
+                                    "tokenUserPrincipalName": "[variables('pbiUserLoginName')]"
                                 }
                             },
                             "serialization": null,
                             "diagnostics": null
+                        }
+                    },
+                    {
+                        "name": "CosmosDB",
+                        "properties": {
+                            "dataSource": {
+                                "type": "Microsoft.Storage/DocumentDB",
+                                "properties": {
+                                    "type": "Microsoft.Storage/DocumentDB",
+                                    "properties": {
+                                        "type": "Microsoft.Storage/DocumentDB",
+                                        "accountId": "[variables('cosmosDBName')]",
+                                        "accountKey": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', variables('cosmosDBName')), '2015-04-08').primaryMasterKey]",
+                                        "database": "db",
+                                        "collectionNamePattern": "coll",
+                                        "partitionKey": "/deviceId",
+                                        "documentId": "/deviceId"
+                                    }
+                                },
+                                "serialization": null,
+                                "diagnostics": null
+                            }
                         }
                     },
                     {
