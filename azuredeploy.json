@@ -570,7 +570,7 @@
             "location": "[resourceGroup().location]",
             "type": "Microsoft.StreamAnalytics/StreamingJobs",
             "dependsOn": [
-                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('eventHubNamespaceName'), variables('eventHubName'))]",
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', variables('eventHubNamespaceName'), variables('eventHubName'),variables('eventHubReadRuleName')]",
                 "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDBName'))]"
             ],
             "properties": {
