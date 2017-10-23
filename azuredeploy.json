@@ -625,15 +625,12 @@
                                 "type": "Microsoft.Storage/DocumentDB",
                                 "properties": {
                                     "type": "Microsoft.Storage/DocumentDB",
-                                    "properties": {
-                                        "type": "Microsoft.Storage/DocumentDB",
-                                        "accountId": "[variables('cosmosDBName')]",
-                                        "accountKey": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', variables('cosmosDBName')), '2015-04-08').primaryMasterKey]",
-                                        "database": "db",
-                                        "collectionNamePattern": "coll",
-                                        "partitionKey": "/deviceId",
-                                        "documentId": "/deviceId"
-                                    }
+                                    "accountId": "[variables('cosmosDBName')]",
+                                    "accountKey": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', variables('cosmosDBName')), '2015-04-08').primaryMasterKey]",
+                                    "database": "db",
+                                    "collectionNamePattern": "coll",
+                                    "partitionKey": "/deviceId",
+                                    "documentId": "/deviceId"
                                 },
                                 "serialization": null,
                                 "diagnostics": null
