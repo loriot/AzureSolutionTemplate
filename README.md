@@ -19,12 +19,12 @@ The LORIOT App Id used to identify under which app the devices are synced.
 BA7B0CF5
 ```
 
-### LORIOT_APP_TOKEN
+### LORIOT_API_KEY
 
-Token used to authenticate requests towards LORIOT servers.
+Key used to authenticate requests towards LORIOT servers.
 
 ```
-afvM9AAAAA1ldTEubG9yaW90Lmlvm-GeKaLbzA4zn_ZA95Iv1w==
+********************x9to
 ```
 
 ### LORIOT_API_URL

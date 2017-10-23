@@ -15,11 +15,11 @@
                 "description": "The LORIOT App Id that can be found in the LORIOT portal."
             }
         },
-        "loriotAppToken": {
+        "loriotApiKey": {
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "The LORIOT App Token that can be found in the LORIOT portal under the app's security page."
+                "description": "The LORIOT API Key that can be found in the LORIOT portal under <portal-url>/account/apikeys."
             }
         },
         "loriotApiUrl": {
@@ -355,8 +355,8 @@
                             "value": "6.5.0"
                         },
                         {
-                            "name": "LORIOT_APP_TOKEN",
-                            "value": "[parameters('loriotAppToken')]"
+                            "name": "LORIOT_API_KEY",
+                            "value": "[parameters('loriotApiKey')]"
                         },
                         {
                             "name": "LORIOT_APP_ID",
