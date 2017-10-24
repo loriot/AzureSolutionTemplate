@@ -15,11 +15,11 @@
                 "description": "The LORIOT App Id that can be found in the LORIOT portal."
             }
         },
-        "loriotAppToken": {
+        "loriotApiKey": {
             "type": "string",
             "defaultValue": "",
             "metadata": {
-                "description": "The LORIOT App Token that can be found in the LORIOT portal under the app's security page."
+                "description": "The LORIOT API Key that can be found in the LORIOT portal under <portal-url>/account/apikeys."
             }
         },
         "loriotApiUrl": {
@@ -29,40 +29,12 @@
                 "description": "The LORIOT Network Server Management API URL matching to the location of the app."
             }
         },
-        "pbiDatasetName": { 
+        "pbiDatasetName": {
             "type": "string",
             "minLength": 3,
             "defaultValue": "livedataset",
             "metadata": {
                 "description": "Name for the live Power BI dataset (from Stream Analytics)."
-            }
-        },
-        "pbiGroupName": { 
-            "type": "string",
-            "defaultValue": "My Workspace",
-            "metadata": {
-                "description": "Name for the Power BI Group to stream data to (must be created before starting the job)"
-            }
-        },
-        "pbiGroupID": { 
-            "type": "string",
-            "defaultValue": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
-            "metadata": {
-                "description": "ID for the Power BI Group to stream data to (must be created before starting the job) - found in the URL for the dashboard or the settings page. Can be configured later in the Azure portal."
-            }
-        },
-        "pbiUserDisplayName": { 
-            "type": "string",
-            "defaultValue": "Jane Doe",
-            "metadata": {
-                "description": "Your name for connecting Stream Analytics to PowerBI. e.g. John Doe"
-            }
-        },
-        "pbiUserLoginName": { 
-            "type": "string",
-            "defaultValue": "example@microsoft.com",
-            "metadata": {
-                "description": "Your login name/alias for connecting Stream Analytics to Power BI. e.g. example@microsoft.com"
             }
         },
         "sqlAdministratorLogin": {
@@ -76,6 +48,17 @@
             "type": "securestring",
             "metadata": {
                 "description": "The SQL database admin login password."
+            }
+        },
+        "timeSeriesInsightDeploy": {
+            "type": "string",
+            "allowedValues": [
+                "true",
+                "false"
+            ],
+            "defaultValue": "true",
+            "metadata": {
+                "description": "Deploy a Time Series Insight element to provide early analysis on the data."
             }
         }
     },
@@ -95,19 +78,25 @@
         "storageAccountName": "[concat(parameters('uniqueSolutionPrefix'), 'storage')]",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "storageAccountType": "Standard_LRS",
-        "gitRepoUrl": "https://github.com/loriot/AzureSolutionTemplate.git",
+        "gitUsername": "loriot",
+        "gitRepoUrl": "[concat('https://github.com/',variables('gitUsername'),'/AzureSolutionTemplate.git')]",
         "gitBranch": "master",
         "eventHubName": "[concat(parameters('uniqueSolutionPrefix'), 'eventhub')]",
-        "eventHubNamespaceName" : "[concat(parameters('uniqueSolutionPrefix'), 'eventhubnamespace')]",
-        "timeSeriesConsumerGroupName":"[concat(parameters('uniqueSolutionPrefix'),'timeseriesconsumergroup')]",
-        "messageConsumerGroupName":"[concat(parameters('uniqueSolutionPrefix'),'messageconsumergroup')]",
-        "eventHubReadRuleName":"[concat(parameters('uniqueSolutionPrefix'),'eventhubreadrule')]",
-        "eventHubWriteRuleName":"[concat(parameters('uniqueSolutionPrefix'),'eventhubwriterule')]",
+        "eventHubNamespaceName": "[concat(parameters('uniqueSolutionPrefix'), 'eventhubnamespace')]",
+        "timeSeriesConsumerGroupName": "[concat(parameters('uniqueSolutionPrefix'),'timeseriesconsumergroup')]",
+        "messageConsumerGroupName": "[concat(parameters('uniqueSolutionPrefix'),'messageconsumergroup')]",
+        "eventHubReadRuleName": "[concat(parameters('uniqueSolutionPrefix'),'eventhubreadrule')]",
+        "eventHubWriteRuleName": "[concat(parameters('uniqueSolutionPrefix'),'eventhubwriterule')]",
         "cosmosdbName": "[concat(parameters('uniqueSolutionPrefix'),'cosmosdb')]",
         "sqlServerName": "[concat(parameters('uniqueSolutionPrefix'),'sqlserver')]",
         "sqlDatabaseName": "[concat(parameters('uniqueSolutionPrefix'),'sqldb')]",
         "streamAnalyticsJobName": "[concat(parameters('uniqueSolutionPrefix'),'streamanalytics')]",
-        "cosmosOfferType": "Standard"
+        "cosmosOfferType": "Standard",
+        "pbiGroupName": "My Workspace",
+        "pbiGroupID": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        "pbiUserDisplayName": "Anon Ymous",
+        "pbiUserLoginName": "example@domain.com",
+        "timeSeriesName": "[concat(parameters('uniqueSolutionPrefix'),'timeseries')]"
     },
     "resources": [
         {
@@ -237,82 +226,79 @@
                 "sku": "Dynamic"
             }
         },
-        {  
-            "apiVersion":"2017-04-01",
-            "name":"[variables('eventHubNamespaceName')]",
-            "type":"Microsoft.EventHub/namespaces",
-            "location":"[resourceGroup().location]",
-            "sku":{  
-               "name":"Standard"
+        {
+            "apiVersion": "2017-04-01",
+            "name": "[variables('eventHubNamespaceName')]",
+            "type": "Microsoft.EventHub/namespaces",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard"
             },
             "properties": {
-               "isAutoInflateEnabled": true,
-               "maximumThroughputUnits": 20
-               },
-            "resources":[  
-               {  
-                  "apiVersion":"2017-04-01",
-                  "name":"[variables('eventHubName')]",
-                  "type":"eventhubs",
-                  "dependsOn":[  
-                     "[concat('Microsoft.EventHub/namespaces/', variables('eventHubNamespaceName'))]"
-                  ],
-                  "properties":{
-                     "messageRetentionInDays": 7,
-                     "partitionCount": 2
-                  },
-                  "resources":[  
-                     {  
-                        "apiVersion":"2017-04-01",
-                        "name":"[variables('timeSeriesConsumerGroupName')]",
-                        "type":"consumergroups",
-                        "dependsOn":[  
-                           "[variables('eventHubName')]"
-                        ],
-                        "properties":{
-                        
+                "isAutoInflateEnabled": true,
+                "maximumThroughputUnits": 20
+            },
+            "resources": [
+                {
+                    "apiVersion": "2017-04-01",
+                    "name": "[variables('eventHubName')]",
+                    "type": "eventhubs",
+                    "dependsOn": [
+                        "[concat('Microsoft.EventHub/namespaces/', variables('eventHubNamespaceName'))]"
+                    ],
+                    "properties": {
+                        "messageRetentionInDays": 7,
+                        "partitionCount": 2
+                    },
+                    "resources": [
+                        {
+                            "apiVersion": "2017-04-01",
+                            "name": "[variables('timeSeriesConsumerGroupName')]",
+                            "type": "consumergroups",
+                            "dependsOn": [
+                                "[variables('eventHubName')]"
+                            ],
+                            "properties": {}
+                        },
+                        {
+                            "apiVersion": "2017-04-01",
+                            "name": "[variables('messageConsumerGroupName')]",
+                            "type": "consumergroups",
+                            "dependsOn": [
+                                "[variables('eventHubName')]"
+                            ],
+                            "properties": {}
+                        },
+                        {
+                            "type": "authorizationRules",
+                            "name": "[variables('eventHubReadRuleName')]",
+                            "apiVersion": "2017-04-01",
+                            "scale": null,
+                            "dependsOn": [
+                                "[variables('eventHubName')]"
+                            ],
+                            "properties": {
+                                "rights": [
+                                    "Listen"
+                                ]
+                            }
+                        },
+                        {
+                            "type": "authorizationRules",
+                            "name": "[variables('eventHubWriteRuleName')]",
+                            "apiVersion": "2017-04-01",
+                            "scale": null,
+                            "dependsOn": [
+                                "[variables('eventHubName')]"
+                            ],
+                            "properties": {
+                                "rights": [
+                                    "Send"
+                                ]
+                            }
                         }
-                     },
-                     {  
-                        "apiVersion":"2017-04-01",
-                        "name":"[variables('messageConsumerGroupName')]",
-                        "type":"consumergroups",
-                        "dependsOn":[  
-                           "[variables('eventHubName')]"
-                        ],
-                        "properties":{
-                        }
-                     },
-                     {
-                        "type": "authorizationRules",
-                        "name": "[variables('eventHubReadRuleName')]",
-                        "apiVersion": "2017-04-01",
-                        "scale": null,
-                        "dependsOn":[  
-                            "[variables('eventHubName')]"
-                         ],
-                        "properties": {
-                            "rights": [
-                                "Listen"
-                            ]
-                        }
-                     },
-                     {
-                        "type": "authorizationRules",
-                        "name": "[variables('eventHubWriteRuleName')]",
-                        "apiVersion": "2017-04-01",
-                        "scale": null,
-                        "dependsOn":[  
-                            "[variables('eventHubName')]"
-                         ],
-                        "properties": {
-                            "rights": [
-                                "Send"
-                            ]
-                        }
-                     }
-                  ]
-               }
+                    ]
+                }
             ]
         },
         {
@@ -369,8 +355,8 @@
                             "value": "6.5.0"
                         },
                         {
-                            "name": "LORIOT_APP_TOKEN",
-                            "value": "[parameters('loriotAppToken')]"
+                            "name": "LORIOT_API_KEY",
+                            "value": "[parameters('loriotApiKey')]"
                         },
                         {
                             "name": "LORIOT_APP_ID",
@@ -423,8 +409,7 @@
                     ]
                 }
             }
-        }
-        ,
+        },
         {
             "name": "[variables('sqlServerName')]",
             "type": "Microsoft.Sql/servers",
@@ -473,6 +458,53 @@
             ]
         },
         {
+            "apiVersion": "2017-02-28-preview",
+            "name": "[variables('timeSeriesName')]",
+            "location": "[resourceGroup().location]",
+            "type": "Microsoft.TimeSeriesInsights/environments",
+            "condition": "[equals(parameters('timeSeriesInsightDeploy'),'true')]",
+            "tags": {
+                "displayName": "Time Series Insights"
+            },
+            "sku": {
+                "name": "S1",
+                "tier": "Standard",
+                "size": "1",
+                "capacity": "1"
+            },
+            "properties": {
+                "dataRetentionTime": "P31D"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('eventHubNamespaceName'), variables('eventHubName'))]"
+            ],
+            "resources": [
+                {
+                    "apiVersion": "2017-02-28-preview",
+                    "name": "EventHubSource",
+                    "type": "EventSources",
+                    "kind": "Microsoft.EventHub",
+                    "condition": "[equals(parameters('timeSeriesInsightDeploy'),'true')]",
+                    "location": "[resourceGroup().location]",
+                    "tags": {
+                        "displayName": "Event Hub Event Source"
+                    },
+                    "properties": {
+                        "serviceBusNamespace": "[variables('eventHubNamespaceName')]",
+                        "eventHubName": "[variables('eventHubName')]",
+                        "consumerGroupName": "[variables('timeSeriesConsumerGroupName')]",
+                        "keyName": "RootManageSharedAccessKey",
+                        "sharedAccessKey": "[listKeys(concat('Microsoft.EventHub/namespaces/',variables('EventHubNamespaceName'),'/AuthorizationRules/RootManageSharedAccessKey'), '2014-09-01').primaryKey]",
+                        "timestampPropertyName": "timeStampProperty",
+                        "eventSourceResourceId": "[concat('Microsoft.EventHub/namespaces/',variables('eventHubNamespaceName'),'/eventhubs/',variables('eventHubName'))"
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.TimeSeriesInsights/environments/', variables('timeSeriesName'))]"
+                    ]
+                }
+            ]
+        },
+        {
             "apiVersion": "2015-04-08",
             "type": "Microsoft.DocumentDB/databaseAccounts",
             "name": "[variables('cosmosDBName')]",
@@ -493,13 +525,18 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2014-04-01-preview",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites/sourcecontrols', variables('functionAppName'),'web')]"    
+                "[resourceId('Microsoft.Web/sites/sourcecontrols', variables('functionAppName'),'web')]"
             ],
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[Concat('https://',variables('functionAppName'),'.azurewebsites.net/api/setup')]",
-                  "contentVersion": "1.0.0.0"
+                    "uri": "[concat('https://raw.githubusercontent.com/',variables('gitUsername'),'/AzureSolutionTemplate/',variables('gitBranch'),'/function.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "solutionPrefix": {
+                        "value": "[parameters('uniqueSolutionPrefix')]"
+                    }
                 }
             }
         },
@@ -509,12 +546,12 @@
             "location": "[resourceGroup().location]",
             "type": "Microsoft.StreamAnalytics/StreamingJobs",
             "dependsOn": [
-              "[resourceId('Microsoft.EventHub/namespaces/eventhubs', variables('eventHubNamespaceName'), variables('eventHubName'))]",
-              "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDBName'))]"
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', variables('eventHubNamespaceName'), variables('eventHubName'),variables('eventHubReadRuleName'))]",
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDBName'))]"
             ],
             "properties": {
-              "sku": {
-                "name": "Standard"
+                "sku": {
+                    "name": "Standard"
                 },
                 "outputErrorPolicy": "stop",
                 "eventsOutOfOrderPolicy": "adjust",
@@ -522,102 +559,102 @@
                 "eventsLateArrivalMaxDelayInSeconds": 5,
                 "dataLocale": "en-US",
                 "inputs": [
-                    {    
-                        "name":"EventHub",  
-                        "properties":{    
-                        "type":"stream",  
-                        "serialization":{    
-                                "type":"JSON",  
-                                "properties":{    
-                                    "encoding":"UTF8"
-                                }  
-                            },  
-                            "datasource": {    
-                                "type":"Microsoft.ServiceBus/EventHub",  
-                                "properties": {    
-                                    "serviceBusNamespace":"[variables('eventHubNamespaceName')]",  
-                                    "sharedAccessPolicyName":"[variables('eventHubReadRuleName')]",  
-                                    "sharedAccessPolicyKey":"[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', variables('eventHubNamespaceName'), variables('eventHubName'), variables('eventHubReadRuleName')), '2014-09-01').primaryKey]",  
-                                    "eventHubName":"[variables('eventHubName')]",
-                                    "consumerGroupName":"[variables('messageConsumerGroupName')]"  
-                                }  
-                            }  
-                        }  
+                    {
+                        "name": "EventHub",
+                        "properties": {
+                            "type": "stream",
+                            "serialization": {
+                                "type": "JSON",
+                                "properties": {
+                                    "encoding": "UTF8"
+                                }
+                            },
+                            "datasource": {
+                                "type": "Microsoft.ServiceBus/EventHub",
+                                "properties": {
+                                    "serviceBusNamespace": "[variables('eventHubNamespaceName')]",
+                                    "sharedAccessPolicyName": "[variables('eventHubReadRuleName')]",
+                                    "sharedAccessPolicyKey": "[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', variables('eventHubNamespaceName'), variables('eventHubName'), variables('eventHubReadRuleName')), '2014-09-01').primaryKey]",
+                                    "eventHubName": "[variables('eventHubName')]",
+                                    "consumerGroupName": "[variables('messageConsumerGroupName')]"
+                                }
+                            }
+                        }
                     }
                 ],
                 "transformation": {
                     "name": "Transformation",
                     "properties": {
-                    "streamingUnits": 1,
-                    "query": "SELECT raw.EUI as eui, *\r\nINTO\r\n    [CosmosDB]\r\nFROM\r\n    [EventHub]\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature, decoded.humidity as humidity, raw.ts as ts, EventEnqueuedTime as time\r\nINTO\r\n    [SQLDB]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'WEATHER_SHIELD'\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature , decoded.humidity as humidity, raw.ts as ts, EventEnqueuedTime as time\r\nINTO\r\n    [PowerBI]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'WEATHER_SHIELD'"                    
+                        "streamingUnits": 1,
+                        "query": "SELECT raw.EUI as eui, *\r\nINTO\r\n    [CosmosDB]\r\nFROM\r\n    [EventHub]\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature, decoded.humidity as humidity, raw.ts as ts, EventEnqueuedTime as time\r\nINTO\r\n    [SQLDB]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'WEATHER_SHIELD'\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature , decoded.humidity as humidity, raw.ts as ts, EventEnqueuedTime as time\r\nINTO\r\n    [PowerBI]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'WEATHER_SHIELD'"
                     }
                 },
                 "outputs": [
-                {
-                    "name": "PowerBI",
-                    "properties": {
-                        "dataSource": {
-                            "type": "PowerBI",
-                            "outputPowerBISource": {
-                                "dataSet": "[parameters('pbiDatasetName')]",
-                                "table": "weathershielddata",
-                                "groupId": "[parameters('pbiGroupID')]",
-                                "groupName": "[parameters('pbiGroupName')]",
-                                "refreshToken": "dummytoken",
-                                "tokenUserDisplayName": "[parameters('pbiUserDisplayName')]",
-                                "tokenUserPrincipalName": "[parameters('pbiUserLoginName')]"
+                    {
+                        "name": "PowerBI",
+                        "properties": {
+                            "dataSource": {
+                                "type": "PowerBI",
+                                "outputPowerBISource": {
+                                    "dataSet": "[parameters('pbiDatasetName')]",
+                                    "table": "weathershielddata",
+                                    "groupId": "[variables('pbiGroupID')]",
+                                    "groupName": "[variables('pbiGroupName')]",
+                                    "refreshToken": "dummytoken",
+                                    "tokenUserDisplayName": "[variables('pbiUserDisplayName')]",
+                                    "tokenUserPrincipalName": "[variables('pbiUserLoginName')]"
+                                },
+                                "properties": {
+                                    "dataSet": "[parameters('pbiDatasetName')]",
+                                    "table": "weathershielddata",
+                                    "groupId": "[variables('pbiGroupID')]",
+                                    "groupName": "[variables('pbiGroupName')]",
+                                    "refreshToken": "dummytoken",
+                                    "tokenUserDisplayName": "[variables('pbiUserDisplayName')]",
+                                    "tokenUserPrincipalName": "[variables('pbiUserLoginName')]"
+                                }
                             },
-                            "properties": {
-                                "dataSet": "[parameters('pbiDatasetName')]",
-                                "table": "weathershielddata",
-                                "groupId": "[parameters('pbiGroupID')]",
-                                "groupName": "[parameters('pbiGroupName')]",
-                                "refreshToken": "dummytoken",
-                                "tokenUserDisplayName": "[parameters('pbiUserDisplayName')]",
-                                "tokenUserPrincipalName": "[parameters('pbiUserLoginName')]"
-                            }
-                        },
-                        "serialization": null,
-                        "diagnostics": null
-                    }
-                },
-                {
-                    "name": "CosmosDB",
-                    "properties": {
-                        "dataSource": {
-                        "type": "Microsoft.Storage/DocumentDB",
-                            "properties": {
+                            "serialization": null,
+                            "diagnostics": null
+                        }
+                    },
+                    {
+                        "name": "CosmosDB",
+                        "properties": {
+                            "dataSource": {
                                 "type": "Microsoft.Storage/DocumentDB",
-                                "accountId": "[variables('cosmosDBName')]",
-                                "accountKey": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', variables('cosmosDBName')), '2015-04-08').primaryMasterKey]",                    
-                                "database": "db",
-                                "collectionNamePattern": "coll",
-                                "partitionKey": "/deviceId",
-                                "documentId": "/deviceId"
+                                "properties": {
+                                    "type": "Microsoft.Storage/DocumentDB",
+                                    "accountId": "[variables('cosmosDBName')]",
+                                    "accountKey": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', variables('cosmosDBName')), '2015-04-08').primaryMasterKey]",
+                                    "database": "db",
+                                    "collectionNamePattern": "coll",
+                                    "partitionKey": "/deviceId",
+                                    "documentId": "/deviceId"
+                                },
+                                "serialization": null,
+                                "diagnostics": null
                             }
-                        },
-                        "serialization": null,
-                        "diagnostics": null
+                        }
+                    },
+                    {
+                        "name": "SQLDB",
+                        "properties": {
+                            "datasource": {
+                                "type": "Microsoft.Sql/Server/Database",
+                                "properties": {
+                                    "server": "[variables('sqlServerName')]",
+                                    "database": "[variables('sqlDatabaseName')]",
+                                    "user": "[parameters('sqlAdministratorLogin')]",
+                                    "password": "[parameters('sqlAdministratorLoginPassword')]",
+                                    "table": "dbo.WeatherData"
+                                }
+                            },
+                            "serialization": null,
+                            "diagnostics": null
+                        }
                     }
-                },
-                {
-                    "name": "SQLDB",
-                    "properties": {
-                        "datasource": {
-                            "type": "Microsoft.Sql/Server/Database",
-                            "properties": {
-                                "server": "[variables('sqlServerName')]",
-                                "database": "[variables('sqlDatabaseName')]",
-                                "user": "[parameters('sqlAdministratorLogin')]",
-                                "password": "[parameters('sqlAdministratorLoginPassword')]",
-                                "table": "dbo.WeatherData"
-                            }
-                        },
-                        "serialization": null,
-                        "diagnostics": null
-                    }
-                }
-              ]
+                ]
             }
         }
     ]
