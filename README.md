@@ -9,6 +9,56 @@ Run with the following command:
 ```
 az group deployment create --name ExampleDeployment --resource-group YourResourceGroup --template-file azuredeploy.json --parameters azuredeploy.parameters.json
 ```
+
+
+# Solution overview
+This solution creates a simply deployable reference architecture in Azure that allows the user to ingest process store and analyze large quantity of sensor data coming in from the Loriot gateway.  This repository offers to Loriot customer an almost ready to use solution that allows them to quickly visualize Lora connected device data. This could be a starting point to a more complex productive solution. (link get started)
+
+Loriot provides LoRaWAN software products and software services. With the new tool, customers can now provision the IOT infrastructure out of the Loriot Management Portal into the end customers Azure subscription with almost no configuration.  
+
+The proposed solution allows the end user to provision new IOT devices very quickly into their Azure subscription and synchronize the device provisioning into the Loriot account. Thanks to the Loriot-Azure IoT Hub connector data can be easily collected by the IoT Hub and then decoded through a custom decoding Function. Through the optional Time Series component users can quickly analyze and display sensor data. The solution also implement an example how to store all sensor data to Cosmos DB and the example temperature data to SQL Database. The template alos offer a PowerBI Dashboard with some preconfigured charts including realtime temperature data. Furthermore the PowerBI report is able to detect and display inactive or broken devices.  
+
+![Architecture Diagram Loriot](images/Loriot_Architecture.jpg)
+
+## Components ##
+
+
+### Azure Functions ###
+Azure Functions is a solution for easily running small pieces of code, or "functions" in the cloud. You can write the code you need for the problem at hand, without worrying about a whole application or the infrastructure to run it. Azure Functions lets you develop serverless applications on Microsoft Azure.
+
+
+### Azure Event Hub ###
+Azure Event Hubs is a highly scalable data streaming platform and event ingestion service capable of receiving and processing millions of events per second. Event Hubs can process and store events, data, or telemetry produced by distributed software and devices. Data sent to an event hub can be transformed and stored using any real-time analytics provider or batching/storage adapters. With the ability to provide publish-subscribe capabilities with low latency and at massive scale, Event Hubs serves as the "on ramp" for Big Data.
+
+In our solution we use it for...(Mikhail) 
+
+### Azure Stream Analytic ###
+Azure Stream Analytics is a fully managed event-processing engine that lets you set up real-time analytic computations on streaming data. The data can come from devices, sensors, web sites, social media feeds, applications, infrastructure systems, and more. Use Stream Analytics to examine high volumes of data flowing from devices or processes, extract information from the data stream, and look for patterns, trends, and relationships. Based on what's in the data, you can then perform application tasks. For example, you might raise alerts, kick off automation workflows, feed information to a reporting tool such as Power BI, or store data for later investigation.
+
+
+## Get Started
+Prerequisites: 
+Loriot Admin Portal and Azure Subscription
+
+* Loriot App ID / App Token / API URL
+* click the button
+* fill in required information (solution Prefix need to be unique)
+* Architecture diagram ![Description of the image](image)
+
+1. Add the IOT Devices in Azure IOT Hub, the devices will be automatically provisioned into the Loriot Portal
+2. Add the Device Twin Meta Data as specified (here)
+3. Monitor your device on this PowerBi
+
+## About Loriot
+
+LORIOT AG is a Swiss start-up in the field of Internet of Things, founded in 2015.
+The core product today is software for scalable, distributed, resilient operation of LoRaWAN networks and end-to-end applications, which is offered under a variety of business models.
+Due to their positioning in the LoRa ecosystem as both software provider and network operator, they are in direct contact with LoRa hardware producers and integrate many of their solutions directly with their services.
+The collaboration allows them to offer not only network software, but a complete end-to-end solution for a real-world IoT application, including gateway and sensor hardware.
+Their typical customers are small and medium enterprises in the Internet of Things business, cities, municipalities and wireless network operators.
+
+# More Details
+
 ## Environment variables
 
 ### LORIOT_APP_ID
