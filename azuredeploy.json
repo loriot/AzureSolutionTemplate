@@ -601,7 +601,7 @@
                     "name": "Transformation",
                     "properties": {
                         "streamingUnits": 1,
-                        "query": "[variables('streamAnalyticsQuery')[equals(parameters('powerBIDeploy'),'true')]]"
+                        "query": "[variables('streamAnalyticsQuery')[string(equals(parameters('powerBIDeploy'),'true'))]]"
                     }
                 },
                 "outputs": [
