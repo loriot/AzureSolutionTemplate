@@ -12,7 +12,7 @@ az group deployment create --name ExampleDeployment --resource-group YourResourc
 
 ## Power BI
 
-This deployment also provides (optional) Power BI visualisation functionality as a starting point for data analysis (both realtime and historical). For instructions on how to make use of this capability please look in the ```power-bi``` folder.
+This deployment also provides (optional) Power BI visualisation functionality as a starting point for data analysis (both realtime and historical). For instructions on how to make use of this capability please look in the [power-bi](power-bi/) folder.
 
 ## Environment variables
 
