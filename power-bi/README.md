@@ -2,11 +2,11 @@
 
 ## Contents
 
+[Introduction](#introduction)
+
 [Realtime Data using Azure Stream Analytics (Power BI Service)](#realtime-data-using-azure-stream-analytics-power-bi-service) 
 
 [Historical Analysis using Cosmos DB (Power BI Desktop)](#historical-analysis-using-cosmos-db-power-bi-desktop)
-
-[Introduction](#introduction)
 
 ## Introduction
 [Power BI](https://powerbi.microsoft.com/en-us/) is Microsoft's interactive data visualisation tool. This template provides two methods of visualising data from sensor devices - realtime analysis using Stream Analytics (requires a Power BI Free subscription or higher), and historical analysis of data stored in Cosmos DB (no subscription required unless you wish to publish/share the dashboard). 
