@@ -51,9 +51,8 @@ namespace LoriotAzureFunctions.InitFunction
             // spread across partitions. Configured for 10K RU/s throughput and an indexing policy that supports 
             // sorting against any number or string property.
             DocumentCollection myCollection = new DocumentCollection();
-            myCollection.Id = "coll";
-            myCollection.PartitionKey.Paths.Add("/deviceId");
-
+            myCollection.Id = "sensordatacollection";
+            myCollection.PartitionKey.Paths.Add("/eui");
             await client.CreateDocumentCollectionIfNotExistsAsync(
                 UriFactory.CreateDatabaseUri("db"),
                 myCollection,
