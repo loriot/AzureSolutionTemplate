@@ -612,7 +612,7 @@
                                     "accountKey": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', variables('cosmosDBName')), '2015-04-08').primaryMasterKey]",
                                     "database": "db",
                                     "collectionNamePattern": "sensordatacollection",
-                                    "partitionKey": "/messageGuid",
+                                    "partitionKey": "/eui",
                                     "documentId": "/messageGuid"
                                 },
                                 "serialization": null,
