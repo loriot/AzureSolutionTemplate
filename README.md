@@ -9,6 +9,11 @@ Run with the following command:
 ```
 az group deployment create --name ExampleDeployment --resource-group YourResourceGroup --template-file azuredeploy.json --parameters azuredeploy.parameters.json
 ```
+
+## Power BI
+
+This deployment also provides (optional) Power BI visualisation functionality as a starting point for data analysis (both realtime and historical). For instructions on how to make use of this capability please look in the [power-bi](power-bi/) folder.
+
 ## Environment variables
 
 ### LORIOT_APP_ID
