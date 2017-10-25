@@ -644,7 +644,7 @@
             "apiVersion": "2016-03-01",
             "location": "[resourceGroup().location]",
             "type": "Microsoft.StreamAnalytics/StreamingJobs/outputs",
-            "name": "PowerBI",
+            "name": "[concat(variables('streamAnalyticsJobName'), '/PowerBI')]",
             "dependsOn": [
                 "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', variables('eventHubNamespaceName'), variables('eventHubName'),variables('eventHubReadRuleName'))]",
                 "[resourceId('Microsoft.StreamAnalytics/StreamingJobs', variables('streamAnalyticsJobName'))]"
