@@ -17,7 +17,7 @@ az group deployment create --name ExampleDeployment --resource-group YourResourc
 
 When adding new devices to the IoT Hub, ensure you modify the Device Twin to include the following tags in order for the routing function to assign the correct decoder:
 
-![Add Tags](images/AddTags.png)
+![Device Twin - Add Tags](images/DeviceTwinAddTags.png)
 
 ## Power BI
 
