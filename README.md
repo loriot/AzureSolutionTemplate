@@ -9,6 +9,7 @@ Run with the following command:
 ```
 az group deployment create --name ExampleDeployment --resource-group YourResourceGroup --template-file azuredeploy.json --parameters azuredeploy.parameters.json
 ```
+>NOTE: Once deployed, you will need to navigate to the [Azure portal](portal.azure.com) and start the Stream Analytics job manually using the button at the top of the blade. For instructions on how to do this if you have chosen to deploy the Power BI component of the template, please see the [power-bi](power-bi/) folder readme.
 
 ## Power BI
 
