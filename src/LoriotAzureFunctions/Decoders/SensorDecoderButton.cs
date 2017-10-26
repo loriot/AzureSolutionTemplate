@@ -15,7 +15,7 @@ namespace LoriotAzureFunctions.Decoders
     public static class SensorDecoderButton
     {
         [FunctionName("SensorDecoderButton")]
-        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequestMessage req, TraceWriter log)
+        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)]HttpRequestMessage req, TraceWriter log)
         {
             // Get request body
             string body = await req.Content.ReadAsStringAsync();

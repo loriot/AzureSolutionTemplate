@@ -107,7 +107,7 @@ Scroll to the top of the 'Applied Steps' pane until you see 'Source'. Click on t
 
 ![Open Source Settings](Images/OpenSource.PNG)
 
-Edit the source settings to reflect the URL for your newly created Cosmos DB and click 'OK' (Cosmos DB will be initialised for you by the deployment script with default database 'db' and collection 'coll', which have been auto-populated for you):
+Edit the source settings to reflect the URL for your newly created Cosmos DB and click 'OK' (Cosmos DB will be initialised for you by the deployment script with default database 'db' and collection 'sensordatacollection', which have been auto-populated for you):
 
 ![Edit Source Settings](Images/EditSource.png)
 

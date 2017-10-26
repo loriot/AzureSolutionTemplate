@@ -2,23 +2,11 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "uniqueSolutionPrefix": {
-            "value":"uniqueprefix"
+      "uniqueSolutionPrefix": {
+        "value":"uniqueprefix"
         },
         "pbiDatasetName": { 
-            "value":"loriotlivedataset"
-        },
-        "pbiGroupName": { 
-            "value":"LoriotTest"
-        },
-        "pbiUserDisplayName": { 
-            "value":"Jane Doe"
-        },
-        "pbiUserLoginName": { 
-            "value":"example@microsoft.com"
-        },
-        "pbiGroupID": { 
-            "value":"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+            "value":"livedataset"
         }
     }
 }
