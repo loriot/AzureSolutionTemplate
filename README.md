@@ -13,6 +13,12 @@ az group deployment create --name ExampleDeployment --resource-group YourResourc
 
 >NOTE: Once deployed, you will need to navigate to the [Azure portal](https://portal.azure.com) and start the Stream Analytics job manually using the button at the top of the blade. For instructions on how to do this if you have chosen to deploy the Power BI component of the template, please see the [power-bi](power-bi/) folder readme.
 
+## Device Twins
+
+When adding new devices to the IoT Hub, ensure you modify the Device Twin to include the following tags in order for the routing function to assign the correct decoder:
+
+![Device Twin - Add Tags](images/DeviceTwinAddTags.png)
+
 ## Power BI
 
 This deployment also provides (optional) Power BI visualisation functionality as a starting point for data analysis (both realtime and historical). For instructions on how to make use of this capability please look in the [power-bi](power-bi/) folder.
