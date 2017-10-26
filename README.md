@@ -58,7 +58,7 @@ Provided with this project is a script that can be used to generate device messa
 
 The router function is triggered by messages coming from the IoT Hub (connection defined in the EVENTHUB_ROUTER_INPUT environment variable) and routes them to the appropriate decoder.
 
-Routing is done based on the *sensordecoder* property present in the device twins tags in the IoT Hubs (connection defined in the IOT_HUB_OWNER_CONNECTION_STRING environment variable) - see [Device Twin Setup](#device-twins) for more information. The function can access this information using the *iothub-connection-device-id* message property automatically added by the IoT Hub.
+Routing is done based on the *sensordecoder* property present in the device twins tags in the IoT Hubs (connection defined in the IOT_HUB_OWNER_CONNECTION_STRING environment variable) - see [Device Twin Setup](#device-twin-setup) for more information. The function can access this information using the *iothub-connection-device-id* message property automatically added by the IoT Hub.
 In a nutshell, routing takes the following strategy:
 
 - If an environment variable with name "DECODER_URL_*sensordecoder*" or "DECODER_URL_DEFAULT_*sensordecoder*" exists, the message will be routed there.
