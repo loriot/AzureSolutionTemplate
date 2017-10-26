@@ -7,6 +7,9 @@
         },
         "pbiDatasetName": { 
             "value":"livedataset"
+        },
+        "powerBIDeploy": { 
+            "value":"true"
         }
     }
 }
