@@ -617,7 +617,7 @@
                                     "database": "db",
                                     "collectionNamePattern": "sensordatacollection",
                                     "partitionKey": "/eui",
-                                    "documentId": "/messageGuid"
+                                    "documentId": "messageGuid"
                                 },
                                 "serialization": null,
                                 "diagnostics": null
