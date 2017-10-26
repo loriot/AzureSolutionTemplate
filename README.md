@@ -15,7 +15,7 @@ az group deployment create --name ExampleDeployment --resource-group YourResourc
 
 ## Contents
 
-[Device Twin Setup (Required)](#device-twins)
+[Device Twin Setup (Required)](#device-twin-setup)
 
 [Power BI (Optional)](#power-bi)
 
