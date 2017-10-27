@@ -27,18 +27,18 @@ az group deployment create --name ExampleDeployment --resource-group YourResourc
 
 [Environment Variables](#environment-variables):
 
-- [LORIOT_APP_ID](#loriotappid)
-- [LORIOT_API_KEY](#loriotapikey)
-- [LORIOT_API_URL](#loriotapiurl)
-- [IOT_HUB_OWNER_CONNECTION_STRING](#iothubownerconnectionstring)
-- [EVENT_HUB_ROUTER_INPUT](#eventhubrouterinput)
-- [EVENT_HUB_ROUTER_OUTPUT](#eventhubrouteroutput)
-- [DOCUMENT_DB_NAME](#documentdbname)
-- [DOCUMENT_DB_ACCESS_KEY](#documentdbaccesskey)
-- [SQL_DB_CONNECTION](#sqldbconnection)
-- [DEVICE_LIFECYCLE_CONNECTION_STRING](#devicelifecycleconnectionstring)
-- [DEVICE_LIFECYCLE_QUEUE_NAME](#devicelifecyclequeuename)
-- [DEVICE_LIFECYCLE_IMPORT_TIMER](#devicelifecycleimporttimer)
+- [LORIOT_APP_ID](#loriot_app_id)
+- [LORIOT_API_KEY](#loriot_api_key)
+- [LORIOT_API_URL](#loriot_api_url)
+- [IOT_HUB_OWNER_CONNECTION_STRING](#iot_hub_owner_connection_string)
+- [EVENT_HUB_ROUTER_INPUT](#event_hub_router_input)
+- [EVENT_HUB_ROUTER_OUTPUT](#event_hub_router_output)
+- [DOCUMENT_DB_NAME](#document_db_name)
+- [DOCUMENT_DB_ACCESS_KEY](#document_db_access_key)
+- [SQL_DB_CONNECTION](#sql_db_connection)
+- [DEVICE_LIFECYCLE_CONNECTION_STRING](#device_lifecycle_connection_string)
+- [DEVICE_LIFECYCLE_QUEUE_NAME](#device_lifecycle_queue_name)
+- [DEVICE_LIFECYCLE_IMPORT_TIMER](#device_lifecycle_import_timer)
 
 ## Device Twin Setup
 
