@@ -56,7 +56,9 @@ namespace LoriotAzureFunctions.InitFunction
             await client.CreateDocumentCollectionIfNotExistsAsync(
                 UriFactory.CreateDatabaseUri("db"),
                 myCollection,
-                new RequestOptions { OfferThroughput = 20000 });
+                new RequestOptions {
+                    OfferThroughput = 400,
+                });
 
             //Create Table in sql
             var str = Environment.GetEnvironmentVariable("SQL_DB_CONNECTION");
@@ -79,7 +81,8 @@ namespace LoriotAzureFunctions.InitFunction
                         [Eui]         NCHAR (16)       NULL,
                         [Temperature] FLOAT (53)       NULL,
                         [Humidity]    FLOAT (53)       NULL,
-                        [ts]          BIGINT           NULL
+                        [ts]          BIGINT           NULL,
+                        [time]        TIME             NULL
                     );";
                     using (SqlCommand createTableCmd = new SqlCommand(createTableQuery, conn))
                     {
