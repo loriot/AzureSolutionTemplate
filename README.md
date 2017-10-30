@@ -1,5 +1,17 @@
 # AzureSolutionTemplate
+# Solution overview
+This solution creates a simply deployable reference architecture in Azure that allows the user to ingest process store and analyze large quantity of sensor data coming in from the Loriot gateway.  This repository offers to Loriot customer an almost ready to use solution that allows them to quickly visualize Lora connected device data. This could be a starting point to a more complex productive solution. (link get started)
 
+Loriot provides LoRaWAN software products and software services. With the new tool, customers can now provision the IOT infrastructure out of the Loriot Management Portal into the end customers Azure subscription with almost no configuration.  
+
+The proposed solution allows the end user to provision new IOT devices very quickly into their Azure subscription and synchronize the device provisioning into the Loriot account. Thanks to the Loriot-Azure IoT Hub connector data can be easily collected by the IoT Hub and then decoded through a custom decoding Function. Through the optional Time Series component users can quickly analyze and display sensor data. The solution also implement an example how to store all sensor data to Cosmos DB and the example temperature data to SQL Database. The template alos offer a PowerBI Dashboard with some preconfigured charts including realtime temperature data. Furthermore the PowerBI report is able to detect and display inactive or broken devices.  
+
+![Architecture Diagram Loriot](images/Loriot_Architecture.jpg)
+
+## Get Started
+
+Please ensure you have your Loriot App ID / App Token / API URL, you will need it during deployment.
+To run directly on Azure press the button below:
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FLoriot%2FAzureSolutionTemplate%2Fmaster%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
@@ -11,50 +23,70 @@ Run with the following command:
 az group deployment create --name ExampleDeployment --resource-group YourResourceGroup --template-file azuredeploy.json --parameters azuredeploy.parameters.json
 ```
 
->**NOTE: Once deployed, you will need to navigate to the [Azure portal](https://portal.azure.com) and start the Stream Analytics job manually using the button at the top of the blade. For instructions on how to do this if you have chosen to deploy the Power BI component of the template, please see the [power-bi](power-bi/) folder readme.**
+Once the deployment has completed perform the following actions:
+1. navigate to the [Azure portal](https://portal.azure.com) and start the Stream Analytics job manually using the button at the top of the blade. For instructions on how to do this if you have chosen to deploy the Power BI component of the template, please see the [power-bi](power-bi/) folder readme
+2. Add your new IoT Devices in Azure IoT Hub, the devices will be automatically provisioned into the Loriot Portal
+3. Add the Device Twin Meta Data as specified [here](#device-twin-setup) .
 
-## Contents
 
-[Device Twin Setup (Required)](#device-twin-setup)
+## Solution Content
+
+[IoT Hub](#iot-hub)
+- [Device Twin Setup (Required)](#device-twin-setup)
+
+[Azure Functions](#azure-functions)
+- [Router Function](#router-function)
+- [Setup Function](#setup-function)
+- [Decoder Function](#decoder-function)
+- [Detect Inactive Devices Function](#detect-inactive-devices-function)
+- [Loriot Lifecycle Function](#loriot-lifecycle-function)
+- [Function Environment Variables](#environment-variables):
+
+    - [LORIOT_APP_ID](#loriot_app_id)
+    - [LORIOT_API_KEY](#loriot_api_key)
+    - [LORIOT_API_URL](#loriot_api_url)
+    - [IOT_HUB_OWNER_CONNECTION_STRING](#iot_hub_owner_connection_string)
+    - [EVENT_HUB_ROUTER_INPUT](#event_hub_router_input)
+    - [EVENT_HUB_ROUTER_OUTPUT](#event_hub_router_output)
+    - [DOCUMENT_DB_NAME](#document_db_name)
+    - [DOCUMENT_DB_ACCESS_KEY](#document_db_access_key)
+    - [SQL_DB_CONNECTION](#sql_db_connection)
+    - [DEVICE_LIFECYCLE_CONNECTION_STRING](#device_lifecycle_connection_string)
+    - [DEVICE_LIFECYCLE_QUEUE_NAME](#device_lifecycle_queue_name)
+    - [DEVICE_LIFECYCLE_IMPORT_TIMER](#device_lifecycle_import_timer)
+
+[Testing](#testing)
+- [Device Emulation (Optional)](#device-emulation)
+
+[Time Series Insights (Optional)](#time-series-insights)
+
+[CosmosDB](#cosmos-db)
+
+[Azure SQL Database](#azure-sql-database)
+
+[Stream Analytics](#stream-analytics)
 
 [Power BI (Optional)](#power-bi)
 
-[Device Emulation (Optional)](#device-emulation)
+[About Loriot](#about-loriot)
 
-[Router Function](#router-function)
 
-[Setup Function](#setup-function)
 
-[Environment Variables](#environment-variables):
+## IoT Hub
+TBD
 
-- [LORIOT_APP_ID](#loriot_app_id)
-- [LORIOT_API_KEY](#loriot_api_key)
-- [LORIOT_API_URL](#loriot_api_url)
-- [IOT_HUB_OWNER_CONNECTION_STRING](#iot_hub_owner_connection_string)
-- [EVENT_HUB_ROUTER_INPUT](#event_hub_router_input)
-- [EVENT_HUB_ROUTER_OUTPUT](#event_hub_router_output)
-- [DOCUMENT_DB_NAME](#document_db_name)
-- [DOCUMENT_DB_ACCESS_KEY](#document_db_access_key)
-- [SQL_DB_CONNECTION](#sql_db_connection)
-- [DEVICE_LIFECYCLE_CONNECTION_STRING](#device_lifecycle_connection_string)
-- [DEVICE_LIFECYCLE_QUEUE_NAME](#device_lifecycle_queue_name)
-- [DEVICE_LIFECYCLE_IMPORT_TIMER](#device_lifecycle_import_timer)
-
-## Device Twin Setup
+### Device Twin Setup
 
 When adding new devices to the IoT Hub, ensure you modify the Device Twin to include the following tags in order for the routing function to assign the correct decoder:
 
 ![Device Twin - Add Tags](images/DeviceTwinAddTags.png)
 
-## Power BI
+## Azure Functions
 
-This deployment also provides (optional) Power BI visualisation functionality as a starting point for data analysis (both realtime and historical). For instructions on how to make use of this capability please look in the [power-bi](power-bi/) folder.
+Azure Functions is a solution for easily running small pieces of code, or "functions" in the cloud. You can write the code you need for the problem at hand, without worrying about a whole application or the infrastructure to run it. Azure Functions lets you develop serverless applications on Microsoft Azure.
+In this project you will find the following functions:
 
-## Device Emulation
-
-Provided with this project is a script that can be used to generate device messages to test the pipeline in the absence of a real device. For more information, see the [test](test/) folder.
-
-## Router Function
+### Router Function
 
 The router function is triggered by messages coming from the IoT Hub (connection defined in the EVENTHUB_ROUTER_INPUT environment variable) and routes them to the appropriate decoder.
 
@@ -71,15 +103,21 @@ The output of the function will be directed to an Event Hub (connection defined 
 - Metadata: Device twins tags from the IoT Hub.
 - Decoded: Message from the IoT device decoded by the appropriate decoder.
 
-## Setup Function
+### Setup Function
 
 The setup function initialises the Cosmos DB collection and the SQL table needed by the pipeline. The function is automatically triggered at the end of the execution of the ARM template. The function uses environment variables DOCUMENT_DB_NAME, DOCUMENT_DB_ACCESS_KEY and SQL_DB_CONNECTION to connect to the two resources.
 
 If the collection or table already exist, the function will return without doing anything.
 
-## Environment variables
+### Decoder Function
 
-### LORIOT_APP_ID
+### Detect Inactive Devices Function
+
+### Loriot Lifecycle Function
+
+### Functions Environment variables
+
+#### LORIOT_APP_ID
 
 The LORIOT App ID used to identify under which app the devices are synced.
 
@@ -87,7 +125,7 @@ The LORIOT App ID used to identify under which app the devices are synced.
 BA7B0CF5
 ```
 
-### LORIOT_API_KEY
+#### LORIOT_API_KEY
 
 Key used to authenticate requests towards LORIOT servers.
 
@@ -95,7 +133,7 @@ Key used to authenticate requests towards LORIOT servers.
 ********************x9to
 ```
 
-### LORIOT_API_URL
+#### LORIOT_API_URL
 
 The base URL of the Network Server Management API used to sync device information between Azure IoT Hub and LORIOT servers.
 
@@ -103,7 +141,7 @@ The base URL of the Network Server Management API used to sync device informatio
 https://eu1.loriot.io/1/nwk/app/
 ```
 
-### IOT_HUB_OWNER_CONNECTION_STRING
+#### IOT_HUB_OWNER_CONNECTION_STRING
 
 The connection string to the IoT Hub used for device syncing and reading the device registry.
 
@@ -111,7 +149,7 @@ The connection string to the IoT Hub used for device syncing and reading the dev
 HostName=something.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=fU3Kw5M5J5QXP1QsFLRVjifZ1TeNSlFEFqJ7Xa5jiqo=
 ```
 
-### EVENT_HUB_ROUTER_INPUT
+#### EVENT_HUB_ROUTER_INPUT
 
 The connection string of the IoT Hub's Event Hub, used as trigger on the RouterFunction to send the messages to the appropriate decoders.
 
@@ -120,7 +158,7 @@ Endpoint=Endpoint=sb://something.servicebus.windows.net/;SharedAccessKeyName=iot
 SharedAccessKeyName=iothubowner;SharedAccessKey=2n/TlIoLJbMjmJOmadPU48G0gYfRCU28HeaL0ilkqMU=
 ```
 
-### EVENT_HUB_ROUTER_OUTPUT
+#### EVENT_HUB_ROUTER_OUTPUT
 
 Connection string defining the output of the router function to the enriched and decoded message Event Hub.
 
@@ -128,15 +166,15 @@ Connection string defining the output of the router function to the enriched and
 Endpoint=sb://something.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=Ei8jNFRlH/rAjYKTTNxh7eIHlgeleffFekHhnyAxrZ4=
 ```
 
-### DOCUMENT_DB_NAME
+#### DOCUMENT_DB_NAME
 
 Document Database name
 
-### DOCUMENT_DB_ACCESS_KEY
+#### DOCUMENT_DB_ACCESS_KEY
 
 Key of the Document Database
 
-### SQL_DB_CONNECTION
+#### SQL_DB_CONNECTION
 
 Connection String of the SQL Database
 
@@ -145,8 +183,36 @@ Server=tcp:something.database.windows.net,1433;Initial Catalog=testdbmikou;Persi
 User ID=username;Password=password;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
 ```
 
-### DEVICE_LIFECYCLE_CONNECTION_STRING
+#### DEVICE_LIFECYCLE_CONNECTION_STRING
 
-### DEVICE_LIFECYCLE_QUEUE_NAME
+#### DEVICE_LIFECYCLE_QUEUE_NAME
 
-### DEVICE_LIFECYCLE_IMPORT_TIMER
+#### DEVICE_LIFECYCLE_IMPORT_TIMER
+
+## Testing 
+### Device Emulation
+
+Provided with this project is a script that can be used to generate device messages to test the pipeline in the absence of a real device. For more information, see the [test](test/) folder.
+
+
+## Time Series Insights
+
+Intro
+
+### How to use it?
+
+## Cosmos DB 
+
+## Azure SQL database
+
+## Power BI
+
+This deployment also provides (optional) Power BI visualisation functionality as a starting point for data analysis (both realtime and historical). For instructions on how to make use of this capability please look in the [power-bi](power-bi/) folder.
+
+## About Loriot
+
+LORIOT AG is a Swiss start-up in the field of Internet of Things, founded in 2015.
+The core product today is software for scalable, distributed, resilient operation of LoRaWAN networks and end-to-end applications, which is offered under a variety of business models.
+Due to their positioning in the LoRa ecosystem as both software provider and network operator, they are in direct contact with LoRa hardware producers and integrate many of their solutions directly with their services.
+The collaboration allows them to offer not only network software, but a complete end-to-end solution for a real-world IoT application, including gateway and sensor hardware.
+Their typical customers are small and medium enterprises in the Internet of Things business, cities, municipalities and wireless network operators.
