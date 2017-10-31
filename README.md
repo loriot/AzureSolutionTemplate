@@ -1,10 +1,9 @@
-# AzureSolutionTemplate
 # Solution overview
 This solution creates a simply deployable reference architecture in Azure that allows the user to ingest process store and analyze large quantity of sensor data coming in from the Loriot gateway.  This repository offers to Loriot customer an almost ready to use solution that allows them to quickly visualize Lora connected device data. This could be a starting point to a more complex productive solution. (link get started)
 
 Loriot provides LoRaWAN software products and software services. With the new tool, customers can now provision the IOT infrastructure out of the Loriot Management Portal into the end customers Azure subscription with almost no configuration.  
 
-The proposed solution allows the end user to provision new IOT devices very quickly into their Azure subscription and synchronize the device provisioning into the Loriot account. Thanks to the Loriot-Azure IoT Hub connector data can be easily collected by the IoT Hub and then decoded through a custom decoding Function. Through the optional Time Series component users can quickly analyze and display sensor data. The solution also implement an example how to store all sensor data to Cosmos DB and the example temperature data to SQL Database. The template alos offer a PowerBI Dashboard with some preconfigured charts including realtime temperature data. Furthermore the PowerBI report is able to detect and display inactive or broken devices.  
+The proposed solution allows the end user to provision new IoT devices very quickly into their Azure subscription and synchronize the device provisioning into the Loriot account. Thanks to the Loriot-Azure IoT Hub connector data can be easily collected by the IoT Hub and then decoded through a custom decoding Function. Through the optional Time Series component users can quickly analyze and display sensor data. The solution also implement an example how to store all sensor data to Cosmos DB and the example temperature data to SQL Database. The template alos offer a PowerBI Dashboard with some preconfigured charts including realtime temperature data. Furthermore the PowerBI report is able to detect and display inactive or broken devices.  
 
 ![Architecture Diagram Loriot](images/Loriot_Architecture.jpg)
 
@@ -73,7 +72,7 @@ Once the deployment has completed perform the following actions:
 
 
 ## IoT Hub
-TBD
+Azure IoT Hub is a scalable, multi-tenant cloud platform (IoT PaaS) that includes an IoT device registry, data storage, and security. It also provides a service interface to support IoT application development.
 
 ### Device Twin Setup
 
@@ -111,11 +110,15 @@ If the collection or table already exist, the function will return without doing
 
 ### Decoder Function
 
+Decoder functions perform the decoding of the sensor raw data payload. By default our solution provide you with 3 example decoder, but the system is built to be easily extensible. Additional decoders can be hosted anywhere and must simply be HTTP REST accessible and be routed correctly by the [router function rules](#router-function).
+
 ### Detect Inactive Devices Function
 
 ### Loriot Lifecycle Function
 
 ### Functions Environment variables
+
+The function application is using a certain amount of environment variables populated at the ARM deploy time. You will in this section description and example of each variables.
 
 #### LORIOT_APP_ID
 
@@ -190,20 +193,31 @@ User ID=username;Password=password;MultipleActiveResultSets=False;Encrypt=True;T
 #### DEVICE_LIFECYCLE_IMPORT_TIMER
 
 ## Testing 
+We do provide a ready to use testing setup in order to test and understand the infrastructure you deployed in a matter of minutes.
+
 ### Device Emulation
 
 Provided with this project is a script that can be used to generate device messages to test the pipeline in the absence of a real device. For more information, see the [test](test/) folder.
 
 
-## Time Series Insights
+## Time Series Insights 
 
-Intro
+Azure Time Series Insights (TSI) is a fully managed analytics, storage, and visualization service that makes it simple to explore and analyze billions of IoT events simultaneously. It gives you a global view of your data, letting you quickly validate your IoT solution and avoid costly downtime to mission-critical devices by helping you discover hidden trends, spot anomalies, and conduct root-cause analyses in near real-time. 
 
-### How to use it?
+### How to set it up?
+
+Deployment of TSI is fully optional and can be toggled on and off without impacting other components. Data ingestion by the service is already configured, admin will have to grant access to the data dashboard to the users (TSI blade -> Data Access Policies --> Add). Users will then be able to see the data flowing in real time by going to the Time Series URL (displayed on the overview blade).
 
 ## Cosmos DB 
 
+Azure Cosmos DB is Microsoft's globally distributed, multi-model database. With the click of a button, Azure Cosmos DB enables you to elastically and independently scale throughput and storage across any number of Azure's geographic regions.
+
+Cosmos DB is used on our architecture to provide data to the offline client [@Anita]. 
+
 ## Azure SQL database
+
+Azure SQL Database is the intelligent, fully-managed relational cloud database service built for developers. Accelerate app development and make maintenance easy and productive using the SQL tools you love to use. Take advantage of built-in intelligence that learns app patterns and adapts to maximize performance, reliability, and data protection. 
+[@Anita]
 
 ## Power BI
 
