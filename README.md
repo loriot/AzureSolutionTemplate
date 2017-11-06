@@ -1,10 +1,7 @@
-# AzureSolutionTemplate
 # Solution overview
-This solution creates a simply deployable reference architecture in Azure that allows the user to ingest process store and analyze large quantity of sensor data coming in from the Loriot gateway.  This repository offers to Loriot customer an almost ready to use solution that allows them to quickly visualize Lora connected device data. This could be a starting point to a more complex productive solution. (link get started)
+This solution creates a simply deployable reference architecture that allows users to ingest, process, store, and analyze large quantity of sensor data coming in from the [Loriot](#about-loriot) gateway on Microsoft Azure. Loriot customer will be able in a matter of no time to visualize data of their Lora connected devices in near real-time. The proposed solution could be a starting point to a more complex productive solution. 
 
-Loriot provides LoRaWAN software products and software services. With the new tool, customers can now provision the IOT infrastructure out of the Loriot Management Portal into the end customers Azure subscription with almost no configuration.  
-
-The proposed solution allows the end user to provision new IOT devices very quickly into their Azure subscription and synchronize the device provisioning into the Loriot account. Thanks to the Loriot-Azure IoT Hub connector data can be easily collected by the IoT Hub and then decoded through a custom decoding Function. Through the optional Time Series component users can quickly analyze and display sensor data. The solution also implement an example how to store all sensor data to Cosmos DB and the example temperature data to SQL Database. The template alos offer a PowerBI Dashboard with some preconfigured charts including realtime temperature data. Furthermore the PowerBI report is able to detect and display inactive or broken devices.  
+Thanks to this architecture, end users can provision new IoT devices very quickly directly into their Azure subscription and synchronization occur automatically into the Loriot account. Thanks to the Loriot-Azure IoT Hub connector, inbound data from the sensors are collected by the IoT Hub and their payload can be decoded thanks to an extensible system of decoder functions. Solution implements data storage examples by storing sensor data to a SQL database and a Cosmos DB. In terms of visualization, the template includes a PowerBI Dashboard with some preconfigured charts including realtime temperature data and an optional Time Series component allowing quick display of sensor data straight from the IoT Hub. Finally, the PowerBI report is able to detect and display any inactive or broken devices.  
 
 ![Architecture Diagram Loriot](images/Loriot_Architecture.jpg)
 
@@ -24,10 +21,9 @@ az group deployment create --name ExampleDeployment --resource-group YourResourc
 ```
 
 Once the deployment has completed perform the following actions:
-1. navigate to the [Azure portal](https://portal.azure.com) and start the Stream Analytics job manually using the button at the top of the blade. For instructions on how to do this if you have chosen to deploy the Power BI component of the template, please see the [power-bi](power-bi/) folder readme
+1. navigate to the [Azure portal](https://portal.azure.com) and start the Stream Analytics job manually using the button at the top of the blade. For detailed instructions, please see the [power-bi](power-bi/) folder readme
 2. Add your new IoT Devices in Azure IoT Hub, the devices will be automatically provisioned into the Loriot Portal
-3. Add the Device Twin Meta Data as specified [here](#device-twin-setup) .
-
+3. Add the Device Twin Meta Data as specified [here](#device-twin-setup).
 
 ## Solution Content
 
@@ -71,9 +67,8 @@ Once the deployment has completed perform the following actions:
 [About Loriot](#about-loriot)
 
 
-
 ## IoT Hub
-TBD
+Azure IoT Hub is a scalable, multi-tenant cloud platform (IoT PaaS) that includes an IoT device registry, data storage, and security. It also provides a service interface to support IoT application development.
 
 ### Device Twin Setup
 
@@ -88,7 +83,7 @@ In this project you will find the following functions:
 
 ### Router Function
 
-The router function is triggered by messages coming from the IoT Hub (connection defined in the EVENTHUB_ROUTER_INPUT environment variable) and routes them to the appropriate decoder.
+The *router* function is triggered by messages coming from the IoT Hub (connection defined in the EVENTHUB_ROUTER_INPUT environment variable) and routes them to the appropriate decoder.
 
 Routing is done based on the *sensordecoder* property present in the device twins tags in the IoT Hubs (connection defined in the IOT_HUB_OWNER_CONNECTION_STRING environment variable) - see [Device Twin Setup](#device-twin-setup) for more information. The function can access this information using the *iothub-connection-device-id* message property automatically added by the IoT Hub.
 In a nutshell, routing takes the following strategy:
@@ -105,17 +100,30 @@ The output of the function will be directed to an Event Hub (connection defined 
 
 ### Setup Function
 
-The setup function initialises the Cosmos DB collection and the SQL table needed by the pipeline. The function is automatically triggered at the end of the execution of the ARM template. The function uses environment variables DOCUMENT_DB_NAME, DOCUMENT_DB_ACCESS_KEY and SQL_DB_CONNECTION to connect to the two resources.
+The setup function initializes the Cosmos DB collection and the SQL table needed by the pipeline. The function is automatically triggered at the end of the execution of the ARM template. It won't be called at later stage and is therefore not part of the standard application architecture. The function uses environment variables DOCUMENT_DB_NAME, DOCUMENT_DB_ACCESS_KEY and SQL_DB_CONNECTION to connect to the two resources.
 
 If the collection or table already exist, the function will return without doing anything.
 
 ### Decoder Function
 
+Decoder functions perform the decoding of the sensor raw data payload. By default, our solution provide you with 3 example decoder, but the system is built to be easily extensible. Additional decoders can be hosted anywhere and must simply be HTTP REST accessible and be routed correctly by the [router function rules](#router-function).
+
+Currently the decoder functions are written with no authentication required (Authorization.Anonymous in the function declaration). Although adding authentication at deploy time proved quite complicated, it is possible to add authentication to it after deployment easily by just adding an environment variable and a reference to the function code in the router function.
+
 ### Detect Inactive Devices Function
+
+This function aims at detecting devices that stopped transmitting for a certain time. The function calls the IoT Hub and check all the device that were inactive during more than the allowed time window.
 
 ### Loriot Lifecycle Function
 
+The lifecycle functions aimed at providing a synchronization between the Azure IoT Hub and the Loriot device portal.
+
+- *ImportDevice* Function import all devices present from the Loriot device portal to the IoT Hub. It will ensure no duplicate are created. This function exists as a timer function to ensure regular syncing of new devices (*ScheduledImportDevice*) and a http triggered function named *ImportDevice* that could be used during development, testing or linked to be triggered by your custom UI.
+- *ExportDevice* Function handle creation and deletion of devices event to the Loriot Portal. The messages are taken from the Device Lifecycle queue.
+
 ### Functions Environment variables
+
+The function application is using a certain amount of environment variables populated at the ARM deploy time. You will in this section description and example of each variables.
 
 #### LORIOT_APP_ID
 
@@ -151,7 +159,7 @@ HostName=something.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAcces
 
 #### EVENT_HUB_ROUTER_INPUT
 
-The connection string of the IoT Hub's Event Hub, used as trigger on the RouterFunction to send the messages to the appropriate decoders.
+The connection string of the IoT Hub's Event Hub, used as trigger on the *Router* Function to send the messages to the appropriate decoders.
 
 ```
 Endpoint=Endpoint=sb://something.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=UDEL1prJ9THqLJel+uk8UeU8fZVkSSi2+CMrp5yrrWM=;EntityPath=iothubname;
@@ -185,29 +193,44 @@ User ID=username;Password=password;MultipleActiveResultSets=False;Encrypt=True;T
 
 #### DEVICE_LIFECYCLE_CONNECTION_STRING
 
+The connection string of the service bus queue carrying messages syncing between the Loriot IoT Hub and the device portal.
+
 #### DEVICE_LIFECYCLE_QUEUE_NAME
+
+The name of the service bus queue carrying messages syncing between the Loriot IoT Hub and the device portal.
 
 #### DEVICE_LIFECYCLE_IMPORT_TIMER
 
+The timer value that will call the *ScheduledImportDevice* function 
+
 ## Testing 
+We do provide a ready to use testing setup in order to test and understand the infrastructure you deployed in a matter of minutes.
+
 ### Device Emulation
 
 Provided with this project is a script that can be used to generate device messages to test the pipeline in the absence of a real device. For more information, see the [test](test/) folder.
 
+## Time Series Insights 
 
-## Time Series Insights
+Azure Time Series Insights (TSI) is a fully managed analytics, storage, and visualization service that makes it simple to explore and analyze billions of IoT events simultaneously. It gives you a global view of your data, letting you quickly validate your IoT solution and avoid costly downtime to mission-critical devices by helping you discover hidden trends, spot anomalies, and conduct root-cause analyses in near real-time. 
 
-Intro
+### How to set it up?
 
-### How to use it?
+Deployment of TSI is fully optional and can be toggled on and off without impacting other components. Data ingestion by the service is already configured, admin will have to grant access to the data dashboard to the users (TSI blade -> Data Access Policies --> Add). Users will then be able to see the data flowing in real time by going to the Time Series URL (displayed on the overview blade).
 
 ## Cosmos DB 
 
+Azure Cosmos DB is Microsoft's globally distributed, multi-model database. With the click of a button, Azure Cosmos DB enables you to elastically and independently scale throughput and storage across any number of Azure's geographic regions.
+
+This solution instantiate Cosmos DB with a documentDB API, you can access your data using SQL like queries. It is in use in our default architecture to provide data to the offline powerBI client. 
+
 ## Azure SQL database
+
+Azure SQL Database is the intelligent, fully-managed relational cloud database service built for developers. Accelerate app development and make maintenance easy and productive using the SQL tools you love to use. Take advantage of built-in intelligence that learns app patterns and adapts to maximize performance, reliability, and data protection. 
 
 ## Power BI
 
-This deployment also provides (optional) Power BI visualisation functionality as a starting point for data analysis (both realtime and historical). For instructions on how to make use of this capability please look in the [power-bi](power-bi/) folder.
+This deployment also provides (optional) Power BI visualization functionality as a starting point for data analysis (both realtime and historical). For instructions on how to make use of this capability please look in the [power-bi](power-bi/) folder.
 
 ## About Loriot
 
@@ -216,3 +239,5 @@ The core product today is software for scalable, distributed, resilient operatio
 Due to their positioning in the LoRa ecosystem as both software provider and network operator, they are in direct contact with LoRa hardware producers and integrate many of their solutions directly with their services.
 The collaboration allows them to offer not only network software, but a complete end-to-end solution for a real-world IoT application, including gateway and sensor hardware.
 Their typical customers are small and medium enterprises in the Internet of Things business, cities, municipalities and wireless network operators.
+
+
