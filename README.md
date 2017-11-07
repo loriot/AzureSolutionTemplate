@@ -1,19 +1,23 @@
 # Solution overview
-This solution creates a simply deployable reference architecture that allows users to ingest, process, store, and analyze large quantity of sensor data coming in from the [Loriot](#about-loriot) gateway on Microsoft Azure. Loriot customer will be able in a matter of no time to visualize data of their Lora connected devices in near real-time. The proposed solution could be a starting point to a more complex productive solution. 
+This solution creates a simply deployable reference architecture that allows users to ingest, process, store, and analyze large quantities of sensor data coming from the [Loriot](#about-loriot) gateway on Microsoft Azure. Loriot customers will be able in a matter of no time to visualize data from their Lora connected devices in near real-time. The proposed solution could be a starting point for a more complex production-ready solution. 
 
-Thanks to this architecture, end users can provision new IoT devices very quickly directly into their Azure subscription and synchronization occur automatically into the Loriot account. Thanks to the Loriot-Azure IoT Hub connector, inbound data from the sensors are collected by the IoT Hub and their payload can be decoded thanks to an extensible system of decoder functions. Solution implements data storage examples by storing sensor data to a SQL database and a Cosmos DB. In terms of visualization, the template includes a PowerBI Dashboard with some preconfigured charts including realtime temperature data and an optional Time Series component allowing quick display of sensor data straight from the IoT Hub. Finally, the PowerBI report is able to detect and display any inactive or broken devices.  
+Thanks to this architecture, end users can provision new IoT devices very quickly directly into their Azure subscription and synchronization will occur automatically back into their Loriot account. Thanks to the Loriot-Azure IoT Hub connector, inbound data from the sensors is collected by the IoT Hub and their payload can be decoded thanks to an extensible system of decoder functions. The solution implements data storage examples by storing sensor data in both SQL and Cosmos DB. 
+
+In terms of visualization, the template includes a Power BI Dashboard with some preconfigured charts including realtime temperature data and an optional Time Series component allowing quick display of sensor data straight from the IoT Hub. Finally, the Power BI report is able to detect and display any inactive or broken devices.  
 
 ![Architecture Diagram Loriot](images/Loriot_Architecture.jpg)
 
 ## Get Started
 
 Please ensure you have your Loriot App ID / App Token / API URL, you will need it during deployment.
-To run directly on Azure press the button below:
+
+To deploy directly to Azure via the browser click the button below:
+
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FLoriot%2FAzureSolutionTemplate%2Fmaster%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
-To run locally, ensure you have the latest Azure CLI installed from [here](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest).
+To deploy to Azure via the commandline, first ensure you have the latest Azure CLI installed from [here](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest).
 Run with the following command:
 
 ```powershell
@@ -21,9 +25,9 @@ az group deployment create --name ExampleDeployment --resource-group YourResourc
 ```
 
 Once the deployment has completed perform the following actions:
-1. navigate to the [Azure portal](https://portal.azure.com) and start the Stream Analytics job manually using the button at the top of the blade. For detailed instructions, please see the [power-bi](power-bi/) folder readme
-2. Add your new IoT Devices in Azure IoT Hub, the devices will be automatically provisioned into the Loriot Portal
-3. Add the Device Twin Meta Data as specified [here](#device-twin-setup).
+1. Navigate to the [Azure portal](https://portal.azure.com) and start the Stream Analytics job manually using the button at the top of the blade. For detailed instructions, please see the [power-bi](power-bi/) folder readme.
+2. Add your new IoT Devices in Azure IoT Hub - the devices will be automatically provisioned in the Loriot Portal.
+3. Add the Device Twin metadata as specified [here](#device-twin-setup).
 
 ## Solution Content
 
@@ -76,7 +80,16 @@ When adding new devices to the IoT Hub, ensure you modify the Device Twin to inc
 
 ![Device Twin - Add Tags](images/DeviceTwinAddTags.png)
 
-## Azure Functions
+Snippet provided below for easy copy-paste:
+```json
+"tags": {
+    "sensorDecoder": "<decoderName>",
+    "sensorName": "<sensorName>",
+    "location": "<latitude,longitude>"
+},
+```
+
+## Azure Functions: Description
 
 Azure Functions is a solution for easily running small pieces of code, or "functions" in the cloud. You can write the code you need for the problem at hand, without worrying about a whole application or the infrastructure to run it. Azure Functions lets you develop serverless applications on Microsoft Azure.
 In this project you will find the following functions:
@@ -95,18 +108,18 @@ The output of the function will be directed to an Event Hub (connection defined 
 
 - MessageGuid: A unique GUID generated by the Router function to track each message.
 - Raw: An exact copy of the raw message received from the IoT Hub.
-- Metadata: Device twins tags from the IoT Hub.
+- Metadata: Device twins tags from the IoT Hub (see [here](#device-twin-setup) for more detail).
 - Decoded: Message from the IoT device decoded by the appropriate decoder.
 
 ### Setup Function
 
 The setup function initializes the Cosmos DB collection and the SQL table needed by the pipeline. The function is automatically triggered at the end of the execution of the ARM template. It won't be called at later stage and is therefore not part of the standard application architecture. The function uses environment variables DOCUMENT_DB_NAME, DOCUMENT_DB_ACCESS_KEY and SQL_DB_CONNECTION to connect to the two resources.
 
-If the collection or table already exist, the function will return without doing anything.
+If the collection or table already exists, the function will return without doing anything.
 
 ### Decoder Function
 
-Decoder functions perform the decoding of the sensor raw data payload. By default, our solution provide you with 3 example decoder, but the system is built to be easily extensible. Additional decoders can be hosted anywhere and must simply be HTTP REST accessible and be routed correctly by the [router function rules](#router-function).
+Decoder functions perform the decoding of the sensor raw data payload. By default, this solution provides three example decoders, however the system is built to be easily extensible. Additional decoders can be hosted anywhere and must simply be HTTP REST accessible and be routed to correctly by the [router function rules](#router-function).
 
 Currently the decoder functions are written with no authentication required (Authorization.Anonymous in the function declaration). Although adding authentication at deploy time proved quite complicated, it is possible to add authentication to it after deployment easily by just adding an environment variable and a reference to the function code in the router function.
 
@@ -118,12 +131,12 @@ This function aims at detecting devices that stopped transmitting for a certain 
 
 The lifecycle functions aimed at providing a synchronization between the Azure IoT Hub and the Loriot device portal.
 
-- *ImportDevice* Function import all devices present from the Loriot device portal to the IoT Hub. It will ensure no duplicate are created. This function exists as a timer function to ensure regular syncing of new devices (*ScheduledImportDevice*) and a http triggered function named *ImportDevice* that could be used during development, testing or linked to be triggered by your custom UI.
-- *ExportDevice* Function handle creation and deletion of devices event to the Loriot Portal. The messages are taken from the Device Lifecycle queue.
+- *ImportDevice* Function imports all devices present in the Loriot device portal to the IoT Hub. It will ensure no duplicates are created. This function exists as a time-triggered function to ensure regular syncing of new devices (*ScheduledImportDevice*) and a http triggered function named *ImportDevice* that could be used during development, testing or linked to be triggered by your custom UI.
+- *ExportDevice* Function handles creation and deletion of devices event to the Loriot Portal. The messages are taken from the Device Lifecycle queue.
 
-### Functions Environment variables
+## Azure Functions: Environment variables
 
-The function application is using a certain amount of environment variables populated at the ARM deploy time. You will in this section description and example of each variables.
+The function application uses a collection of environment variables populated at  ARM deploy time. This section contains a description and example of each variable.
 
 #### LORIOT_APP_ID
 
@@ -135,7 +148,7 @@ BA7B0CF5
 
 #### LORIOT_API_KEY
 
-Key used to authenticate requests towards LORIOT servers.
+Key used to authenticate requests with LORIOT servers.
 
 ```
 ********************x9to
@@ -151,7 +164,7 @@ https://eu1.loriot.io/1/nwk/app/
 
 #### IOT_HUB_OWNER_CONNECTION_STRING
 
-The connection string to the IoT Hub used for device syncing and reading the device registry.
+The connection string for the IoT Hub used for device syncing and reading the device registry.
 
 ```
 HostName=something.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=fU3Kw5M5J5QXP1QsFLRVjifZ1TeNSlFEFqJ7Xa5jiqo=
@@ -222,7 +235,7 @@ Deployment of TSI is fully optional and can be toggled on and off without impact
 
 Azure Cosmos DB is Microsoft's globally distributed, multi-model database. With the click of a button, Azure Cosmos DB enables you to elastically and independently scale throughput and storage across any number of Azure's geographic regions.
 
-This solution instantiate Cosmos DB with a documentDB API, you can access your data using SQL like queries. It is in use in our default architecture to provide data to the offline powerBI client. 
+This solution instantiates Cosmos DB using the documentDB API, allowing access to data using SQL-like queries. It is used in this default architecture to provide data to the offline Power BI client. 
 
 ## Azure SQL database
 
@@ -230,7 +243,7 @@ Azure SQL Database is the intelligent, fully-managed relational cloud database s
 
 ## Power BI
 
-This deployment also provides (optional) Power BI visualization functionality as a starting point for data analysis (both realtime and historical). For instructions on how to make use of this capability please look in the [power-bi](power-bi/) folder.
+This deployment also provides (optional) Power BI visualization functionality as a starting point for data analysis (both realtime and historical). For instructions on how to make use of this capability please refer to the [power-bi](power-bi/) folder readme.
 
 ## About Loriot
 
