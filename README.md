@@ -5,7 +5,7 @@ Thanks to this architecture, end users can provision new IoT devices very quickl
 
 In terms of visualization, the template includes a Power BI Dashboard with some preconfigured charts including realtime temperature data and an optional Time Series component allowing quick display of sensor data straight from the IoT Hub. Finally, the Power BI report is able to detect and display any inactive or broken devices.  
 
-![Architecture Diagram Loriot](images/Loriot_Architecture.jpg)
+![Architecture Diagram Loriot](images/LoriotArchitecture.png)
 
 ## Get Started
 
