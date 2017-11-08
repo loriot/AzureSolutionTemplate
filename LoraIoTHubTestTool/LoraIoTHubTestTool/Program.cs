@@ -14,7 +14,7 @@ namespace LoraIoTHubTestTool
             Random rnd = new Random();
 
             string connectionString ="";
-            string deviceId = "BE7A00000000190F";
+            string deviceId = "BE7A00000000999F";
 
             int messageCount = 1;
             int delayInSeconds = 10;
@@ -41,7 +41,7 @@ namespace LoraIoTHubTestTool
             CommandOptionType.SingleValue);
 
             var m = app.Option("-m |--mcount<messagecount>",
-            "Optional no of message to sent (default 1)",
+            "Optional no of message to send (default 1)",
             CommandOptionType.SingleValue);
 
             var s = app.Option("-s |--s<seconds>",
