@@ -8,7 +8,7 @@ Please ensure you have added a device to IoTHub and you have added the correct d
 
 By default the testing tool is using this device id: "BE7A00000000999F" that can be overridden  by the -d parameter
 
-The default device twins data are the following:
+The default device twins data is the following:
 
 ```json
  "tags": {
