@@ -82,7 +82,7 @@ namespace LoriotAzureFunctions.InitFunction
                         [Temperature] FLOAT (53)       NULL,
                         [Humidity]    FLOAT (53)       NULL,
                         [ts]          BIGINT           NULL,
-                        [time]        TIME             NULL
+                        [time]        DATETIME             NULL
                     );";
                     using (SqlCommand createTableCmd = new SqlCommand(createTableQuery, conn))
                     {
