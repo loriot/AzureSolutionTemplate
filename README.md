@@ -221,7 +221,11 @@ We do provide a ready to use testing setup in order to test and understand the i
 
 ### Device Emulation
 
-Provided with this project is a script that can be used to generate device messages to test the pipeline in the absence of a real device. For more information, see the [test](test/) folder.
+Provided with this project .Net Core console based emulator tool and a scrpit emulator that can be used to generate device messages to test the pipeline in the absence of a real device. 
+
+For more information on the script tool, see the [test](test/) folder.
+
+For more information on the .Net console tool, see the [LoraIoTHubTestTool](LoraIoTHubTestTool/) folder.
 
 ## Time Series Insights 
 
