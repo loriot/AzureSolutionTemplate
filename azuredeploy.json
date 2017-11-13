@@ -60,6 +60,17 @@
             "metadata": {
                 "description": "Deploy a Time Series Insight element to provide early analysis on the data."
             }
+        },
+        "powerBIDeploy": {
+            "type": "string",
+            "allowedValues": [
+                "true",
+                "false"
+            ],
+            "defaultValue": "true",
+            "metadata": {
+                "description": "Deploy Power BI live output from Stream Analytics to visualise data in near realtime."
+            }
         }
     },
     "variables": {
@@ -96,7 +107,13 @@
         "pbiGroupID": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
         "pbiUserDisplayName": "Anon Ymous",
         "pbiUserLoginName": "example@domain.com",
-        "timeSeriesName": "[concat(parameters('uniqueSolutionPrefix'),'timeseries')]"
+        "timeSeriesName": "[concat(parameters('uniqueSolutionPrefix'),'timeseries')]",
+        "streamAnalyticsQuery": {
+
+            "true": "SELECT raw.EUI as eui, *\r\nINTO\r\n    [CosmosDB]\r\nFROM\r\n    [EventHub]\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature, decoded.humidity as humidity, raw.ts as ts, EventEnqueuedUtcTime as time\r\nINTO\r\n    [SQLDB]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'SensorDecoderWeather'\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature, decoded.humidity as humidity, raw.ts as ts, EventEnqueuedUtcTime as time\r\nINTO\r\n    [PowerBI]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'SensorDecoderWeather'",
+            "false": "SELECT raw.EUI as eui, *\r\nINTO\r\n    [CosmosDB]\r\nFROM\r\n    [EventHub]\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature, decoded.humidity as humidity, raw.ts as ts, EventEnqueuedUtcTime as time\r\nINTO\r\n    [SQLDB]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'SensorDecoderWeather'"
+
+        }
     },
     "resources": [
         {
@@ -586,38 +603,10 @@
                     "name": "Transformation",
                     "properties": {
                         "streamingUnits": 1,
-                        "query": "SELECT raw.EUI as eui, *\r\nINTO\r\n    [CosmosDB]\r\nFROM\r\n    [EventHub]\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature, decoded.humidity as humidity, raw.ts as ts, EventEnqueuedTime as time\r\nINTO\r\n    [SQLDB]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'WEATHER_SHIELD'\r\nSELECT MessageGUID, raw.EUI as eui, decoded.temperature as temperature , decoded.humidity as humidity, raw.ts as ts, EventEnqueuedTime as time\r\nINTO\r\n    [PowerBI]\r\nFROM\r\n    [EventHub]\r\nWHERE  metadata.sensorDecoder = 'WEATHER_SHIELD'"
+                        "query": "[variables('streamAnalyticsQuery')[string(equals(parameters('powerBIDeploy'),'true'))]]"
                     }
                 },
                 "outputs": [
-                    {
-                        "name": "PowerBI",
-                        "properties": {
-                            "dataSource": {
-                                "type": "PowerBI",
-                                "outputPowerBISource": {
-                                    "dataSet": "[parameters('pbiDatasetName')]",
-                                    "table": "weathershielddata",
-                                    "groupId": "[variables('pbiGroupID')]",
-                                    "groupName": "[variables('pbiGroupName')]",
-                                    "refreshToken": "dummytoken",
-                                    "tokenUserDisplayName": "[variables('pbiUserDisplayName')]",
-                                    "tokenUserPrincipalName": "[variables('pbiUserLoginName')]"
-                                },
-                                "properties": {
-                                    "dataSet": "[parameters('pbiDatasetName')]",
-                                    "table": "weathershielddata",
-                                    "groupId": "[variables('pbiGroupID')]",
-                                    "groupName": "[variables('pbiGroupName')]",
-                                    "refreshToken": "dummytoken",
-                                    "tokenUserDisplayName": "[variables('pbiUserDisplayName')]",
-                                    "tokenUserPrincipalName": "[variables('pbiUserLoginName')]"
-                                }
-                            },
-                            "serialization": null,
-                            "diagnostics": null
-                        }
-                    },
                     {
                         "name": "CosmosDB",
                         "properties": {
@@ -628,9 +617,9 @@
                                     "accountId": "[variables('cosmosDBName')]",
                                     "accountKey": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', variables('cosmosDBName')), '2015-04-08').primaryMasterKey]",
                                     "database": "db",
-                                    "collectionNamePattern": "coll",
-                                    "partitionKey": "/deviceId",
-                                    "documentId": "/deviceId"
+                                    "collectionNamePattern": "sensordatacollection",
+                                    "partitionKey": "/eui",
+                                    "documentId": "messageGuid"
                                 },
                                 "serialization": null,
                                 "diagnostics": null
@@ -655,6 +644,42 @@
                         }
                     }
                 ]
+            }
+        },
+        {
+            "apiVersion": "2016-03-01",
+            "location": "[resourceGroup().location]",
+            "type": "Microsoft.StreamAnalytics/StreamingJobs/outputs",
+            "name": "[concat(variables('streamAnalyticsJobName'), '/PowerBI')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', variables('eventHubNamespaceName'), variables('eventHubName'),variables('eventHubReadRuleName'))]",
+                "[resourceId('Microsoft.StreamAnalytics/StreamingJobs', variables('streamAnalyticsJobName'))]"
+            ],
+            "condition": "[equals(parameters('powerBIDeploy'),'true')]",
+            "properties": {
+                "dataSource": {
+                    "type": "PowerBI",
+                    "outputPowerBISource": {
+                        "dataSet": "[parameters('pbiDatasetName')]",
+                        "table": "weathershielddata",
+                        "groupId": "[variables('pbiGroupID')]",
+                        "groupName": "[variables('pbiGroupName')]",
+                        "refreshToken": "dummytoken",
+                        "tokenUserDisplayName": "[variables('pbiUserDisplayName')]",
+                        "tokenUserPrincipalName": "[variables('pbiUserLoginName')]"
+                    },
+                    "properties": {
+                        "dataSet": "[parameters('pbiDatasetName')]",
+                        "table": "weathershielddata",
+                        "groupId": "[variables('pbiGroupID')]",
+                        "groupName": "[variables('pbiGroupName')]",
+                        "refreshToken": "dummytoken",
+                        "tokenUserDisplayName": "[variables('pbiUserDisplayName')]",
+                        "tokenUserPrincipalName": "[variables('pbiUserLoginName')]"
+                    }
+                },
+                "serialization": null,
+                "diagnostics": null
             }
         }
     ]

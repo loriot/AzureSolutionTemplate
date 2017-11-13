@@ -2,12 +2,20 @@
 
 ## Contents
 
-[Realtime Data using Azure Stream Analytics (Power BI Service)](#realtime-data-using-azure-stream-analytics-power-bi-service) 
+[Introduction](#introduction)
+
+[Realtime Data using Azure Stream Analytics (Power BI Service)](#realtime-data-using-azure-stream-analytics-power-bi-service)
 
 [Historical Analysis using Cosmos DB (Power BI Desktop)](#historical-analysis-using-cosmos-db-power-bi-desktop)
 
+## Introduction
+
+[Power BI](https://powerbi.microsoft.com/en-us/) is Microsoft's interactive data visualisation tool. This template provides two methods of visualising data from sensor devices - realtime analysis using Stream Analytics (requires a Power BI Free subscription or higher), and historical analysis of data stored in Cosmos DB (no subscription required unless you wish to publish/share the dashboard).
+
+These reports are provided as a starting point for specialised analysis and do not contain any sensor-specific visualisations.
 
 ## Realtime Data using Azure Stream Analytics (Power BI Service)
+
 If you have deployed the template using the 'Deploy to Azure' button, click on the 'Manage your resources' link once all resources have successfully deployed:
 
 ![Manage Resources](Images/ManageResources.PNG)
@@ -39,16 +47,18 @@ Now the job is running. You won’t see the dataset in the portal until it has s
 ![New Dataset](Images/PowerBIStreamingDataset.PNG)
 
 To create visuals using this streaming data, do the following:
+
 1. Select a dashboard from the Dashboards menu on the left (or create a new one).
+
 2. Add a tile from the menu at the top of the page:
 
 ![Add Tile](Images/AddTile.PNG)
 
-3. Select 'Custom Streaming Data' as the source: 
+3. Select 'Custom Streaming Data' as the source:
 
 ![Select Source](Images/ConfigureTile1.PNG)
 
-4. Select your dataset (created by Stream Analytics): 
+4. Select your dataset (created by Stream Analytics):
 
 ![Select Dataset](Images/ConfigureTile2.PNG)
 
@@ -61,6 +71,7 @@ To create visuals using this streaming data, do the following:
 ![Finished Tile](Images/TileDemo.PNG)
 
 ## Historical Analysis using Cosmos DB (Power BI Desktop)
+
 This section requires Power BI Desktop to be installed. This is available from Microsoft for free [here](https://powerbi.microsoft.com/en-us/desktop/).
 
 Once installed, open up the Power BI Template [IoTDashboard.pbit](IoTDashboard.pbit) provided with this repo.
@@ -101,7 +112,7 @@ Scroll to the top of the 'Applied Steps' pane until you see 'Source'. Click on t
 
 ![Open Source Settings](Images/OpenSource.PNG)
 
-Edit the source settings to reflect the URL for your newly created Cosmos DB and click 'OK' (Cosmos DB will be initialised for you by the deployment script with default database 'db' and collection 'coll', which have been auto-populated for you):
+Edit the source settings to reflect the URL for your newly created Cosmos DB and click 'OK' (Cosmos DB will be initialised for you by the deployment script with default database 'db' and collection 'sensordatacollection', which have been auto-populated for you):
 
 ![Edit Source Settings](Images/EditSource.png)
 
@@ -114,7 +125,7 @@ Enter the primary key for the Cosmos DB when prompted. This can be found in the 
 Repeat this process for the 'Device Data (Latest Readings Only)' query, found in the Queries pane on the left:
 
 ![Device Data (Latest Readings Only)](Images/RepeatProcess.PNG)
- 
+
 >**NOTE: This is a temporary workaround to be used until the Cosmos DB Power BI connector is out of preview and parameters are enabled for this connection type (after which the experience will be similar to that for the Inactive Devices API).**
 
 Click ‘Close and Apply’ in the top left of the Query Editor window. You will then be prompted for authentication for the inactive devices API – choose Anonymous and click 'Connect'.
