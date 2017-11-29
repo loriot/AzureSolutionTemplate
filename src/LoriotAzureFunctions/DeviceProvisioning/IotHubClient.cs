@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Devices;
 using Microsoft.Azure.WebJobs.Host;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,12 +18,30 @@ namespace LoriotAzureFunctions.DeviceProvisioning
             long importedItemCount = 0;
             try
             {
-                var devices = await LoriotClient.ListDevices(log);
+                importedItemCount = await ImportDevices(log, importedItemCount);
+            }
+            catch (HttpRequestException httpRequestEx)
+            {
+                log.Error("Import failed", httpRequestEx);
+                throw;
+            }
 
-                log.Info("Getting existing azure iot devices");
-                var registryManager = RegistryManager.CreateFromConnectionString(System.Environment.GetEnvironmentVariable("IOT_HUB_OWNER_CONNECTION_STRING"));
+            return importedItemCount;
+        }
 
-                if (devices != null)
+        private static async Task<long> ImportDevices(TraceWriter log, long importedItemCount, int page = 1)
+        {
+            var devices = await LoriotClient.ListDevices(log, page);
+
+            log.Info("Getting existing azure iot devices");
+            var registryManager = RegistryManager.CreateFromConnectionString(System.Environment.GetEnvironmentVariable("IOT_HUB_OWNER_CONNECTION_STRING"));
+            int currentPage = devices.page;
+            
+
+            if (devices != null )
+            {
+                JArray devicesList = devices.devices;
+                if (devicesList != null && devicesList.Count > 0)
                 {
                     foreach (var device in devices.devices)
                     {
@@ -40,16 +59,11 @@ namespace LoriotAzureFunctions.DeviceProvisioning
                             log.Info($"Device found in azure iot hub: {eui}");
                         }
                     }
+                    importedItemCount = await ImportDevices(log, importedItemCount, currentPage + 1);
                 }
-            }
-            catch (HttpRequestException httpRequestEx)
-            {
-                log.Error("Import failed", httpRequestEx);
-                throw;
             }
 
             return importedItemCount;
         }
-
     }
 }

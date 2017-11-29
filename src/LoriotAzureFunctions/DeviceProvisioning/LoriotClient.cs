@@ -16,7 +16,7 @@ namespace LoriotAzureFunctions.DeviceProvisioning
 {
     public class LoriotClient
     {
-        public static async Task<dynamic> ListDevices(TraceWriter log)
+        public static async Task<dynamic> ListDevices(TraceWriter log, int page = 1)
         {
             log.Info("Starting getting devices from Loriot");
             using (var client = new HttpClient())
@@ -26,7 +26,7 @@ namespace LoriotAzureFunctions.DeviceProvisioning
                 {
 
 
-                    string url = SetupApiCall(client, log) + "/devices";
+                    string url = $"{SetupApiCall(client, log)}/devices?page={page}";
                     var result = await client.GetAsync(url);
                     string resultContent = await result.Content.ReadAsStringAsync();
                     if (!result.IsSuccessStatusCode)
@@ -52,7 +52,7 @@ namespace LoriotAzureFunctions.DeviceProvisioning
                 string resultContent = null;
                 try
                 {
-                    string url = SetupApiCall(client,log) + "/devices";
+                    string url = $"{SetupApiCall(client, log)}/devices";
                     dynamic item = new ExpandoObject();
                     item.deveui = queueItem.deviceId;
                     StringContent httpConent = new StringContent(JsonConvert.SerializeObject(item), Encoding.UTF8, "application/json");
@@ -91,7 +91,7 @@ namespace LoriotAzureFunctions.DeviceProvisioning
                 string resultContent = null;
                 try
                 {
-                    string url = SetupApiCall(client, log) + "/device/" + queueItem.deviceId;
+                    string url = $"{SetupApiCall(client, log)}/device/{queueItem.deviceId}";
 
                     var result = await client.DeleteAsync(url);
                     resultContent = await result.Content.ReadAsStringAsync();
