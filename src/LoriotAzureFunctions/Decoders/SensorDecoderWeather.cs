@@ -37,9 +37,11 @@ namespace LoriotAzureFunctions.Decoders
             data.temperature = Decimal.Parse(split[0]);
             data.humidity = Decimal.Parse(split[1]);
 
+            var jsonValue = JsonConvert.SerializeObject(data);
+            log.Info(string.Concat("Response: ", jsonValue));
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json")
+                Content = new StringContent(jsonValue, Encoding.UTF8, "application/json")
             };
         }
     }
