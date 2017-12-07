@@ -16,4 +16,4 @@ INTO
     [PowerBI]
 FROM
     [EventHub]
-WHERE  metadata.sensorDecoder = 'SensorDecoderWeather'"
+WHERE  metadata.sensorDecoder = 'SensorDecoderWeather'
