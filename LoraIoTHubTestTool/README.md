@@ -27,7 +27,7 @@ The default device twins data is the following:
 This command will send 1 message with the device id BE7A00000000999F with a random temperature and humidity. You can copy the connection string from the Azure IoThub portal under Settings -> Shared access policies -> device
 
 ```cmd
-dotnet LoraIoTHubTestTool.dll -c HostName=xxxxxxxxx.azure-devices.net;SharedAccessKeyName=device;SharedAccessKey=XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+dotnet LoraIoTHubTestTool.dll -c "HostName=xxxxxxxxx.azure-devices.net;SharedAccessKeyName=device;SharedAccessKey=XXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 ```
 
 Here the list of all the parameters:
