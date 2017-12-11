@@ -93,6 +93,7 @@ namespace LoriotAzureFunctions.Route
                 dynamic metadataMessageSection;
                 //retry logic to avoid the initial message rush to be declined by the IoT hub.
                 int retryCount = 0;
+                string sensorDecoder = null;
                 while (true)
                 {
                     try
@@ -100,11 +101,14 @@ namespace LoriotAzureFunctions.Route
                         if (localCache.Contains(deviceId))
                         {
                             metadataMessageSection = localCache[deviceId];
+                            sensorDecoder = ((Newtonsoft.Json.Linq.JObject)metadataMessageSection)["sensorDecoder"]?.ToString() ?? string.Empty;
                         }
                         else
                         {
                             metadataMessageSection = await GetTags(System.Environment.GetEnvironmentVariable("IOT_HUB_OWNER_CONNECTION_STRING"), deviceId);
-                            localCache.Add(deviceId, metadataMessageSection, policy);
+                            sensorDecoder = ((Newtonsoft.Json.Linq.JObject)metadataMessageSection)["sensorDecoder"]?.ToString() ?? string.Empty;
+                            if (!string.IsNullOrEmpty(sensorDecoder))
+                                localCache.Add(deviceId, metadataMessageSection, policy);
                         }
                         break;
                     }
@@ -122,7 +126,6 @@ namespace LoriotAzureFunctions.Route
 
                 //routing
                 //Case 1 route to a global specific function
-                var sensorDecoder = metadataMessageSection?.sensorDecoder.ToString() ?? string.Empty;
                 var decodedMessageContents = new Dictionary<string, string>();
                 string decodedSection = null;
                 if (string.IsNullOrEmpty(sensorDecoder))
