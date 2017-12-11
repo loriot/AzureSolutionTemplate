@@ -10,8 +10,16 @@ class AzureIoTHub
     {
         if (deviceClient == null)
         {
-            // create Azure IoT Hub client from embedded connection string
-            deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Http1);
+            try
+            {
+                // create Azure IoT Hub client from embedded connection string
+                deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, TransportType.Http1);    
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to connect to IoT Hub using device connection string {deviceConnectionString}", ex);
+            }
+
         }
     }
 

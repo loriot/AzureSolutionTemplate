@@ -9,11 +9,11 @@ namespace LoraIoTHubTestTool
     {
         static void Main(string[] args)
         {
-            
+
 
             Random rnd = new Random();
 
-            string connectionString ="";
+            string connectionString = "";
             string deviceId = "BE7A00000000999F";
 
             int messageCount = 1;
@@ -33,39 +33,40 @@ namespace LoraIoTHubTestTool
             app.HelpOption("-?|-h|--help");
 
             var conString = app.Option("-c |--con<connectionString>",
-            "Mandatory IoTHub Connection string",
-            CommandOptionType.SingleValue);
+                                       "Mandatory IoTHub Connection string (HostName=xxxx.azure-devices.net;SharedAccessKeyName=device;SharedAccessKey=xxxx)",
+                                       CommandOptionType.SingleValue);
 
             var did = app.Option("-d |--device<deviceId>",
-            "Optional deviceid loraWan EUI (string)",
-            CommandOptionType.SingleValue);
+                                 "Optional deviceid loraWan EUI (string)",
+                                 CommandOptionType.SingleValue);
 
             var m = app.Option("-m |--mcount<messagecount>",
-            "Optional no of message to send (default 1)",
-            CommandOptionType.SingleValue);
+                               "Optional no of message to send (default 1)",
+                               CommandOptionType.SingleValue);
 
             var s = app.Option("-s |--s<seconds>",
-           "Optional delay between msg in seconds (default 10)",
-           CommandOptionType.SingleValue);
+                               "Optional delay between msg in seconds (default 10)",
+                               CommandOptionType.SingleValue);
 
             var tmin = app.Option("-tmin |--tmin<mintemperature>",
-            "Optional minimum random temperature (double)",
-            CommandOptionType.SingleValue);
+                                  "Optional minimum random temperature (double)",
+                                  CommandOptionType.SingleValue);
 
             var tmax = app.Option("-tmax |--tmax<maxtemperature>",
-            "Optional maximum random temperature (double)",
-            CommandOptionType.SingleValue);
+                                  $"Optional maximum random temperature (double). Default: between {tminValue} and {tmaxValue}",
+                                  CommandOptionType.SingleValue);
 
             var hmin = app.Option("-hmin |--hmin<minhumidity>",
-            "Optional minimum random humidity (double)",
-            CommandOptionType.SingleValue);
+                                  "Optional minimum random humidity (double)",
+                                  CommandOptionType.SingleValue);
 
             var hmax = app.Option("-hmax |--hmax<maxhumidity>",
-            "Optional maximum random humidity (double)",
-            CommandOptionType.SingleValue);
+                                  $"Optional maximum random humidity (double). Default: between {hminValue} and {hmaxValue}.",
+                                  CommandOptionType.SingleValue);
 
-            app.OnExecute(() => {
 
+            app.OnExecute( async () => 
+            {
                 if (conString.HasValue())
                 {
                     connectionString = conString.Value();
@@ -93,9 +94,9 @@ namespace LoraIoTHubTestTool
 
                 if (tmin.HasValue())
                 {
-                    tminValue =  double.Parse(tmin.Value());                 
+                    tminValue = double.Parse(tmin.Value());
                 }
-               
+
                 if (tmax.HasValue())
                 {
                     tmaxValue = double.Parse(tmax.Value());
@@ -118,24 +119,33 @@ namespace LoraIoTHubTestTool
                 for (int i = 0; i < messageCount; i++)
                 {
                     double temperature = rnd.NextDouble(tminValue, tmaxValue);
-                    double humidity = rnd.NextDouble(hminValue, hmaxValue); 
+                    double humidity = rnd.NextDouble(hminValue, hmaxValue);
 
                     string data = temperature.ToString() + ":" + humidity.ToString();
 
                     string hexData = StringToHex.ConvertToHex(data);
 
-                    StringBuilder sb = new StringBuilder();
+                    var unixTimestamp = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                    string json = String.Format(@"{{ cmd: 'rx',  seqno: 1854,  EUI: '{0}',  ts: {1},  fcnt: 27,  port: 1,  freq: 867100000,  rssi: -25,  snr: 10,  toa: 61,  dr: 'SF7',  ack: false,  bat: 255,  data: '{2}' }}", deviceId, unixTimestamp, hexData);
 
-                    string json = String.Format(@"{{ cmd: 'rx',  seqno: 1854,  EUI: '{0}',  ts: 1507044971381,  fcnt: 27,  port: 1,  freq: 867100000,  rssi: -25,  snr: 10,  toa: 61,  dr: 'SF7',  ack: false,  bat: 255,  data: '{1}' }}",deviceId, hexData);
+                    try
+                    {
+                        await AzureIoTHub.SendDeviceToCloudMessageAsync(connection, json);    
 
-                    AzureIoTHub.SendDeviceToCloudMessageAsync(connection, json).Wait();
+                        app.Out.WriteLine("Message sent from device {0} data {1}", deviceId, data);
 
-                    Console.WriteLine("Message sent from device {0} data {1}", deviceId, data);
+                        if (messageCount > 1)
+                            Thread.Sleep(delayInSeconds * 1000);
 
-                    if(messageCount>1)
-                        Thread.Sleep(delayInSeconds * 1000);
-
-
+                    }
+                    catch (Exception ex)
+                    {                        
+                        app.Out.WriteLine("Could not send message");
+                        app.Out.WriteLine(ex.ToString());
+  
+                        // failed sending message, stop here
+                        return 1;
+                    }
                 }
 
                 return 0;
@@ -144,12 +154,7 @@ namespace LoraIoTHubTestTool
 
             var result = app.Execute(args);
 
-
             Environment.Exit(result);
-
-
-
-
         }
     }
 }
