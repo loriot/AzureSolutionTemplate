@@ -60,6 +60,18 @@ namespace LoriotAzureFunctions.InitFunction
                     OfferThroughput = 400,
                 });
 
+            // Collection for device alarming.
+            DocumentCollection alarmCollection = new DocumentCollection();
+            alarmCollection.Id = "alarmcollection";
+            alarmCollection.PartitionKey.Paths.Add("/eui");
+            await client.CreateDocumentCollectionIfNotExistsAsync(
+                UriFactory.CreateDatabaseUri("db"),
+                alarmCollection,
+                new RequestOptions
+                {
+                    OfferThroughput = 400,
+                });
+
             //Create Table in sql
             var str = Environment.GetEnvironmentVariable("SQL_DB_CONNECTION");
             using (SqlConnection conn = new SqlConnection(str))

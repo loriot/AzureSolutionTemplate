@@ -1,0 +1,351 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "alarmSolutionPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Prefix used in resource names. Should be unique enough since this ends up being used also in domain names."
+            }
+        },
+        "gitUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "the current git username"
+            }
+        },
+        "gitBranch": {
+            "type": "string",
+            "metadata": {
+                "description": "the current git branch"
+            }
+        }
+    },
+    "variables": {
+        "connectionServiceBusName": "[concat(parameters('alarmSolutionPrefix'),'connectionservicebus')]",
+        "alarmConsumerGroupName": "[concat(parameters('alarmSolutionPrefix'),'alarmconsumergroup')]",
+        "serviceBusNamespaceName": "[concat(parameters('alarmSolutionPrefix'),'alarmservicebusnamespace')]",
+        "serviceBusQueueName": "[concat(parameters('alarmSolutionPrefix'),'alarmservicebusqueuename')]",
+        "serviceBusReadRuleName": "[concat(parameters('alarmSolutionPrefix'),'alarmservicebusreadrule')]",
+        "serviceBusWriteRuleName": "[concat(parameters('alarmSolutionPrefix'),'alarmservicebuswriterule')]",
+        "serviceBusSubscription": "[concat(parameters('alarmSolutionPrefix'),'alarmservicebussubscription')]",
+        "functionAlarmingAppName": "[concat(parameters('alarmSolutionPrefix'), 'alarmfunction')]",
+        "logicAppName": "[concat(parameters('alarmSolutionPrefix'),'logicapp')]",
+        "storageAccountName": "[concat(parameters('alarmSolutionPrefix'), 'storage')]",
+        "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+        "cosmosdbName": "[concat(parameters('alarmSolutionPrefix'),'cosmosdb')]",
+        "hostingPlanName": "[concat(parameters('alarmSolutionPrefix'), 'plan')]",
+        "gitUsername": "[parameters('gitUsername')]",
+        "gitRepoUrl": "[concat('https://github.com/',variables('gitUsername'),'/AzureSolutionTemplate.git')]",
+        "gitBranch": "[parameters('gitBranch')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Web/connections",
+            "name": "[variables('connectionServiceBusName')]",
+            "apiVersion": "2016-06-01",
+            "location": "northeurope",
+            "scale": null,
+            "properties": {
+                "displayName": "alarmConnection",
+                "customParameterValues": {},
+                "api": {
+                    "id": "[concat('subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/servicebus')]"
+                },
+                "parameterValues": {
+                    "connectionString": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/topics/authorizationRules',variables('serviceBusNamespaceName'),variables('serviceBusQueueName'),variables('serviceBusReadRuleName')),'2017-04-01').primaryConnectionString]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Logic/workflows",
+            "name": "[variables('logicAppName')]",
+            "apiVersion": "2016-06-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/connections', variables('connectionServiceBusName'))]",
+                "[resourceId('Microsoft.Web/sites/sourcecontrols', variables('functionAlarmingAppName'),'web')]"
+            ],
+            "tags": {},
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "actions": {
+                        "Parse_JSON": {
+                            "inputs": {
+                                "content": "@json(substring(base64ToString(triggerBody()?['ContentData']),indexof(base64ToString(triggerBody()?['ContentData']),'{'),sub(lastindexof(base64ToString(triggerBody()?['ContentData']),'}'),indexof(base64ToString(triggerBody()?['ContentData']),'{'))))",
+                                "schema": {
+                                    "properties": {
+                                        "EventEnqueuedUtcTime": {
+                                            "type": "string"
+                                        },
+                                        "EventProcessedUtcTime": {
+                                            "type": "string"
+                                        },
+                                        "PartitionId": {
+                                            "type": "number"
+                                        },
+                                        "_attachments": {
+                                            "type": "string"
+                                        },
+                                        "_etag": {
+                                            "type": "string"
+                                        },
+                                        "_rid": {
+                                            "type": "string"
+                                        },
+                                        "_self": {
+                                            "type": "string"
+                                        },
+                                        "_ts": {
+                                            "type": "number"
+                                        },
+                                        "decoded": {
+                                            "properties": {
+                                                "humidity": {
+                                                    "type": "number"
+                                                },
+                                                "temperature": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "eui": {
+                                            "type": "string"
+                                        },
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "messageGuid": {
+                                            "type": "string"
+                                        },
+                                        "metadata": {
+                                            "properties": {
+                                                "alarm": {
+                                                    "type": "string"
+                                                },
+                                                "location": {
+                                                    "type": "string"
+                                                },
+                                                "sensorDecoder": {
+                                                    "type": "string"
+                                                },
+                                                "sensorName": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "raw": {
+                                            "properties": {
+                                                "EUI": {
+                                                    "type": "string"
+                                                },
+                                                "ack": {
+                                                    "type": "number"
+                                                },
+                                                "bat": {
+                                                    "type": "number"
+                                                },
+                                                "cmd": {
+                                                    "type": "string"
+                                                },
+                                                "data": {
+                                                    "type": "string"
+                                                },
+                                                "dr": {
+                                                    "type": "string"
+                                                },
+                                                "fcnt": {
+                                                    "type": "number"
+                                                },
+                                                "freq": {
+                                                    "type": "number"
+                                                },
+                                                "port": {
+                                                    "type": "number"
+                                                },
+                                                "rssi": {
+                                                    "type": "number"
+                                                },
+                                                "seqno": {
+                                                    "type": "number"
+                                                },
+                                                "snr": {
+                                                    "type": "number"
+                                                },
+                                                "toa": {
+                                                    "type": "number"
+                                                },
+                                                "ts": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "runAfter": {},
+                            "type": "ParseJson"
+                        },
+                        "isTemperatureAboveLevel": {
+                            "actions": {
+                                "CheckIfAlreadyNotified": {
+                                    "inputs": {
+                                        "body": "@outputs('Compose')",
+                                        "function": {
+                                            "id": "[ResourceId('Microsoft.Web/sites/functions',variables('functionAlarmingAppName'),'CheckIfAlreadyNotified')]"
+                                        }
+                                    },
+                                    "runAfter": {
+                                        "Compose": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "Function"
+                                },
+                                "Compose": {
+                                    "inputs": {
+                                        "eui": "@body('Parse_JSON')?['raw']?['EUI']"
+                                    },
+                                    "runAfter": {},
+                                    "type": "Compose"
+                                },
+                                "WasAlarmRungInLastThreeMinutes": {
+                                    "actions": {},
+                                    "expression": "@equals(body('CheckIfAlreadyNotified')['doAlarmAction'], true)",
+                                    "runAfter": {
+                                        "CheckIfAlreadyNotified": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "If"
+                                }
+                            },
+                            "expression": "@greater(body('Parse_JSON')?['decoded']?['temperature'], 15)",
+                            "runAfter": {
+                                "Parse_JSON": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "If"
+                        }
+                    },
+                    "contentVersion": "1.0.0.0",
+                    "triggers": {
+                        "When_a_message_is_received_in_a_topic_subscription": {
+                            "recurrence": {
+                                "frequency": "Minute",
+                                "interval": 3
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['servicebus']['connectionId']"
+                                    }
+                                },
+                                "method": "get",
+                                "path": "/@{encodeURIComponent(parameters('$serviceBusName'))}/subscriptions/@{encodeURIComponent(parameters('$serviceBusSubscription'))}/messages/head",
+                                "queries": {
+                                    "subscriptionType": "Main"
+                                }
+                            }
+                        }
+                    },
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        },
+                        "$serviceBusName": {
+                            "type": "string"
+                        },
+                        "$serviceBusSubscription": {
+                            "type": "string"
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "servicebus": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections', variables('connectionServiceBusName'))]",
+                                "connectionName": "[variables('connectionServiceBusName')]",
+                                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', 'northeurope', '/managedApis/', 'servicebus')]"
+                            }
+                        }
+                    },
+                    "$serviceBusName": {
+                        "value": "[variables('serviceBusQueueName')]",
+                        "type": "String"
+                    },
+                    "$serviceBusSubscription": {
+                        "value": "[variables('serviceBusSubscription')]",
+                        "type": "String"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2016-08-01",
+            "type": "Microsoft.Web/sites",
+            "name": "[variables('functionAlarmingAppName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "functionapp",
+            "dependsOn": [],
+            "resources": [
+                {
+                    "apiVersion": "2016-08-01",
+                    "name": "web",
+                    "type": "sourcecontrols",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('functionAlarmingAppName'))]"
+                    ],
+                    "properties": {
+                        "repoUrl": "[variables('gitRepoUrl')]",
+                        "branch": "[variables('gitBranch')]",
+                        "IsManualIntegration": true
+                    }
+                }
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsDashboard",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~1"
+                        },
+                        {
+                            "name": "PROJECT",
+                            "value": "src/LoriotAlarmingFunctions/LoriotAlarmingFunctions.csproj"
+                        },
+                        {
+                            "name": "DOCUMENT_DB_NAME",
+                            "value": "[variables('cosmosDBName')]"
+                        },
+                        {
+                            "name": "DOCUMENT_DB_ACCESS_KEY",
+                            "value": "[listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDBName')), '2015-11-06').primaryMasterKey]"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
