@@ -27,7 +27,9 @@ namespace LoriotAlarmingFunctions
                 string body = await req.Content.ReadAsStringAsync();
                 var inputMessage = JsonConvert.DeserializeObject<Message>(body);
                 bool responseBool = false;
-                var documentList = client.CreateDocumentQuery<Message>(UriFactory.CreateDocumentCollectionUri("db", "alarmcollection"), new FeedOptions { EnableCrossPartitionQuery = true }).Where(o => o.eui == inputMessage.eui).AsEnumerable();
+                var query = new SqlQuerySpec("SELECT TOP 1 * FROM books c WHERE c.eui = @eui ORDER BY c._ts DESC", new SqlParameterCollection(new SqlParameter[] { new SqlParameter { Name = "@eui", Value = inputMessage.eui } }));
+                var documentList = client.CreateDocumentQuery<Message>(UriFactory.CreateDocumentCollectionUri("db", "alarmcollection"),query, new FeedOptions { EnableCrossPartitionQuery = true });
+                
                 //if a document already exists
                 if (documentList.Count() == 1)
                 { 
