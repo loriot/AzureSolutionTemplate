@@ -68,6 +68,8 @@ Once the deployment has completed perform the following actions:
 
 [Power BI (Optional)](#power-bi)
 
+[Alarming (Optional)](#alarming)
+
 [About Loriot](#about-loriot)
 
 
@@ -175,8 +177,8 @@ HostName=something.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAcces
 The connection string of the IoT Hub's Event Hub, used as trigger on the *Router* Function to send the messages to the appropriate decoders.
 
 ```
-Endpoint=Endpoint=sb://something.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=UDEL1prJ9THqLJel+uk8UeU8fZVkSSi2+CMrp5yrrWM=;EntityPath=iothubname;
-SharedAccessKeyName=iothubowner;SharedAccessKey=2n/TlIoLJbMjmJOmadPU48G0gYfRCU28HeaL0ilkqMU=
+Endpoint=sb://something.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=UDEL1prJ9THqLJel+uk8UeU8fZVkSSi2+CMrp5yrrWM=;EntityPath=iothubname;
+SharedAccessKeyName=iothubowner
 ```
 
 #### EVENT_HUB_ROUTER_OUTPUT
@@ -248,6 +250,26 @@ Azure SQL Database is the intelligent, fully-managed relational cloud database s
 ## Power BI
 
 This deployment also provides (optional) Power BI visualization functionality as a starting point for data analysis (both realtime and historical). For instructions on how to make use of this capability please refer to the [power-bi](power-bi/) folder readme.
+
+## Alarming
+
+The alarming optional component will enable ability for users to set up an alarm based on their own settings using the [Microsoft Logic App workflow engine](https://docs.microsoft.com/en-us/azure/logic-apps/). A new Service bus, function and logic app will be added to the standard template. 
+
+To configure correctly the alarming functionality of the base template, set a device twin tag named 'alarm' to true as shown below:
+```
+"tags": {
+    "sensorDecoder": "SensorDecoderWeather",
+    "sensorName": "Weather",
+    "location": "47.4086576,8.5914313,16",
+    "alarm": "true"
+  }
+```
+By default, no alarm action is set in the logic app, in order to set one, please add a notification component in the Logic App as shown below in yellow. It could be anything from Outlook, gmail, Twilio (SMS),...
+![Logic App configuration](images/LogicApp.png)
+
+The alarming functionality use a function named "checkInterval" to ensure notifications are not sent too frequently. It uses a DocumentDB collection to save time when alarm last rang. It is possible to change alarm frequency in the function code, by default it is set to 3 minutes.
+The logic app describes the alarming workflow. It is easy for a non-technical people to manipulate the datastream and add filters, actions and conditions. Currently the alarm is set to trigger for every temperature above 15 degrees and it will occur every 3 minutes at maximum. It is possible to change the temperature limit very easily and add your own logic into the data flow.
+
 
 ## About Loriot
 

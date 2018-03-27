@@ -1,0 +1,32 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "alarmSolutionPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Prefix used in resource names. Should be unique enough since this ends up being used also in domain names."
+            }
+        },
+        "gitUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "the current git username"
+            }
+        },
+        "gitBranch": {
+            "type": "string",
+            "metadata": {
+                "description": "the current git branch"
+            }
+        }
+    },
+    "variables": {
+       
+    },
+    "resources": [
+        
+          
+            
+    ]
+}
