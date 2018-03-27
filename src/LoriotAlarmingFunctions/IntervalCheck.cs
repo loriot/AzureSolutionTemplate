@@ -1,3 +1,4 @@
+using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -28,21 +29,30 @@ namespace LoriotAlarmingFunctions
                 var inputMessage = JsonConvert.DeserializeObject<Message>(body);
                 bool responseBool = false;
                 var query = new SqlQuerySpec("SELECT TOP 1 * FROM books c WHERE c.eui = @eui ORDER BY c._ts DESC", new SqlParameterCollection(new SqlParameter[] { new SqlParameter { Name = "@eui", Value = inputMessage.eui } }));
-                var documentList = client.CreateDocumentQuery<Message>(UriFactory.CreateDocumentCollectionUri("db", "alarmcollection"),query, new FeedOptions { EnableCrossPartitionQuery = true }).AsEnumerable();
-                
+                var documentList = client.CreateDocumentQuery<Message>(UriFactory.CreateDocumentCollectionUri("db", "alarmcollection"), query, new FeedOptions { EnableCrossPartitionQuery = true }).AsEnumerable();
+
                 //if a document already exists
                 if (documentList.Count() == 1)
-                { 
+                {
                     if ((DateTime.Now - documentList.First().lastAlarm).TotalMinutes > intervalCheck)
                     {
                         responseBool = true;
                         inputMessage.id = documentList.First().id;
                         inputMessage.lastAlarm = DateTime.Now;
+                        inputMessage.alarmRang = true;
                         log.Info("Ringing Alarm");
                     }
+                    else {
+                        inputMessage.lastAlarm = documentList.First().lastAlarm;
+                        inputMessage.alarmRang = false;
+                    }
+
                 }
-                else if(documentList.Count() == 0)
+                else if (documentList.Count() == 0) {
                     inputMessage.lastAlarm = DateTime.Now;
+                    inputMessage.alarmRang = true;
+                }
+                    
 
                 await client.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri("db", "alarmcollection"), inputMessage);
           
@@ -93,6 +103,7 @@ namespace LoriotAlarmingFunctions
     {
         public string eui { get; set; }
         public string messageGuid { get; set; }
+        public bool alarmRang { get; set; }
         public Raw raw { get; set; }
         public Metadata metadata { get; set; }
         public Decoded decoded { get; set; }
